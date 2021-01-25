@@ -6,6 +6,8 @@ Update time: 2020-12-05 10:14:28.
 
 # TODO: global colorbar placement is not smart enough
 # TODO: make scipy dependency optional
+# TODO: make possible to use and change rcParams
+# TODO: add Plot2QuiverCarotpy
 
 # --------Import modules--------------
 from __future__ import print_function
@@ -571,8 +573,6 @@ def getMissingMask(slab):
 
     return mask
 
-# ------------Find quantiles of a slab------------
-
 
 def getQuantiles(slab, quantiles=None, verbose=True):
     '''Find quantiles of a slab
@@ -599,7 +599,6 @@ def getQuantiles(slab, quantiles=None, verbose=True):
     return results
 
 
-# ----------------Get min/max from 1 or more variables----------------
 def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
              verbose=True):
     '''Get min/max value

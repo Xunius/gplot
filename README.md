@@ -15,9 +15,10 @@
 
 # Basic usage
 
-The signature of the main plotting interfacing functions is:
+The signature of the main plotting interfacing function is:
 
 ```
+from gplot import gplot
 gplot.plot2(var, method, ax, xarray=x, yarray=y)
 ```
 

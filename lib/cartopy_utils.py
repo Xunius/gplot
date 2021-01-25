@@ -6,11 +6,9 @@ Update time: 2020-12-05 10:28:38.
 
 from __future__ import print_function
 import numpy as np
-from matplotlib.pyplot import MaxNLocator
-import matplotlib
 import cartopy.crs as ccrs
 from cartopy.util import add_cyclic_point
-from gplot import Plot2D, Plot2Quiver, Quiver, getSlab, regridToReso
+from gplot.lib.gplot import Plot2D
 
 
 class Plot2Cartopy(Plot2D):
@@ -121,36 +119,3 @@ class Plot2Cartopy(Plot2D):
         return
 
 
-def plot2(var, method, ax=None, legend='global',
-          xarray=None, yarray=None,
-          title=None, latlon=True, latlongrid=False, fill_color='0.8',
-          legend_ori='horizontal', clean=False,
-          isbasemap=True,
-          fix_aspect=True, verbose=True):
-
-    # ---------------Deal with longitude---------------
-    xarray = np.array(xarray)
-    lon0 = xarray[len(xarray)//2]
-    ax.projection = ccrs.PlateCarree(central_longitude=lon0)
-
-    if np.ndim(var) == 1:
-        raise Exception("<var> is 1D")
-
-    if isbasemap and Plot2D.checkBasemap(var, xarray, yarray):
-        # try:
-        # var=increasingLatitude(var)
-        # except:
-        # pass
-        plotobj = Plot2Cartopy(
-            var, method, ax=ax, legend=legend, xarray=xarray, yarray=yarray,
-            title=title, latlon=latlon, latlongrid=latlongrid,
-            fill_color=fill_color, legend_ori=legend_ori, clean=clean,
-            fix_aspect=fix_aspect)
-    else:
-        plotobj = Plot2D(var, method, ax=ax, legend=legend,
-                         xarray=xarray, yarray=yarray,
-                         title=title, latlon=latlon, latlongrid=latlongrid,
-                         legend_ori=legend_ori, clean=clean)
-    cs = plotobj.plot()
-
-    return plotobj
