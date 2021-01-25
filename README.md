@@ -44,6 +44,10 @@ gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats,
 figure.show()
 ```
 
+| ![fig1](docs/default_contourf.png) |
+| :--: |
+|Default contourf plot of global surface pressure field (in Pa), from ERA-I.|
+
 where `var1`, `lons` and `lats` can be obtained, for instance, via `netcdf4`:
 
 ```
@@ -71,6 +75,10 @@ gplot.plot2(
 figure.show()
 ```
 
+| ![fig2](docs/contourf_with_overflow.png) |
+| :--: |
+|Contourf plot of global surface pressure field (in Pa), from ERA-I. Control the number of contourf levels and set overflow levels on both ends.|
+
 where:
 
 * `num=10` specifies the desired number of contourf levels.
@@ -97,6 +105,9 @@ for ii, vii in enumerate(plot_vars):
 figure.show()
 ```
 
+| ![fig3](docs/subplots_sharing_colorbar.png) |
+| :--: |
+|Contourf plot of global surface pressure field (in Pa), from ERA-I. The 4 subplots are sharing the same colorbar.|
 
 ## More examples are given in the `tests` subfolder
 
