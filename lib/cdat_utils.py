@@ -5,10 +5,12 @@ Update time: 2020-12-05 10:28:38.
 '''
 
 from __future__ import print_function
+import os
 import numpy as np
 import cdms2 as cdms
 
-DATA_FILE_NAME='erai_data.nc'
+current_dir, _=os.path.split(__file__)
+DATA_FILE_NAME=os.path.join(current_dir, '../tests/erai_data.nc')
 
 def isInteger(x):
     '''Check an input is integer

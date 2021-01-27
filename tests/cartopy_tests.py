@@ -3,13 +3,13 @@ from __future__ import absolute_import
 
 #--------Import modules-------------------------
 import numpy as np
-import MV2 as MV
 import matplotlib
 matplotlib.use('Qt4Agg')
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import gplot
-import cdat_utils
+from gplot.lib import gplot
+from gplot.lib import netcdf4_utils
+from gplot.lib.cartopy_utils import Plot2QuiverCartopy
 
 SAVE=True
 
@@ -19,7 +19,8 @@ def test_cartopy_default():
     figure=plt.figure(figsize=(12,10),dpi=100)
     ax=figure.add_subplot(111, projection=ccrs.PlateCarree())
     iso=gplot.Isofill(var1, 10, 1, 1, ql=0.005, qr=0.001)
-    gplot.plot2(var1, iso, ax, title='Default cartopy', projection='cyl', geo_interface='cartopy')
+    gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats, title='Default cartopy', projection='cyl', geo_interface='cartopy',
+            nc_interface='netcdf4')
     figure.show()
 
     return
@@ -61,12 +62,11 @@ def test_cartopy_shading():
     ax=figure.add_subplot(111, projection=ccrs.PlateCarree())
 
     iso=gplot.Isofill(var1, 10, 1, 1, ql=0.005, qr=0.001)
-    gplot.plot2(var1, iso, ax, title='Basemap with shading', projection='cyl', geo_interface='cartopy')
+    gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats, title='Basemap with shading', projection='cyl', geo_interface='cartopy')
     shading=gplot.Shading(color='g', alpha=0.5)
 
     thres=np.percentile(var1, 80)
-    shadevar=MV.where(var1>=thres,1,np.nan)
-    shadevar.setAxisList(var1.getAxisList())
+    shadevar=np.where(var1>=thres,1,np.nan)
     gplot.plot2(shadevar, shading, ax, projection='cyl',
             clean=True, geo_interface='cartopy')
 
@@ -139,13 +139,32 @@ def test_cartopy_subplots_global_legend():
 
     return
 
+def test_cartopy_quiver():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111, projection=ccrs.PlateCarree())
+    q=gplot.Quiver()
+    pquiver=Plot2QuiverCartopy(u, v, q, xarray=lons, yarray=lats,
+            ax=ax, title='default quiver', projection='cyl')
+    pquiver.plot()
+
+    figure.show()
+
+    return
+
 if __name__=='__main__':
 
-    var1=cdat_utils.readData('mslp')
-    var2=cdat_utils.readData('sst')
+
+    var1 = netcdf4_utils.readData('msl')
+    var2 = netcdf4_utils.readData('sst')
+    u = netcdf4_utils.readData('u')
+    v = netcdf4_utils.readData('v')
+    lats = netcdf4_utils.readData('latitude')
+    lons = netcdf4_utils.readData('longitude')
 
     #----------------------Tests----------------------
     test_cartopy_default()
+    '''
     test_cartopy_label_axes_False()
     test_cartopy_axes_grid()
     test_cartopy_vertical_legend()
@@ -155,6 +174,5 @@ if __name__=='__main__':
     test_cartopy_boxfill()
     test_cartopy_subplots()
     test_cartopy_subplots_global_legend()
-
-
-
+    test_cartopy_quiver()
+    '''

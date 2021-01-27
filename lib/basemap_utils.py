@@ -370,7 +370,7 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
             self, u, v, method, xarray, yarray, ax=None,
             title=None, label_axes=True, axes_grid=False,
             clean=False, fontsize=12, units=None, fill_color='w',
-            bmap=None, projection='merc',
+            bmap=None, projection='cyl',
             fix_aspect=False, isdrawcoastlines=True,
             isdrawcountries=True, isdrawcontinents=False, isdrawrivers=False,
             isfillcontinents=False):

@@ -5,10 +5,12 @@ Update time: 2021-01-24 17:30:56.
 '''
 
 from __future__ import print_function
+import os
 import numpy as np
 from netCDF4 import Dataset
 
-DATA_FILE_NAME='erai_data.nc'
+current_dir, _=os.path.split(__file__)
+DATA_FILE_NAME=os.path.join(current_dir, '../tests/erai_data.nc')
 
 def readData(varid):
     '''Read in a variable from an netcdf file

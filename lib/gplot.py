@@ -8,6 +8,7 @@ Update time: 2020-12-05 10:14:28.
 # TODO: make scipy dependency optional
 # TODO: make possible to use and change rcParams
 # TODO: add Plot2QuiverCarotpy
+# TODO: consider remove bmap input arg
 
 # --------Import modules--------------
 from __future__ import print_function
@@ -447,7 +448,7 @@ def getSlab(var, index1=-1, index2=-2, verbose=True):
         result = np.squeeze(result)
     except:
         result = result(squeeze=1)
-    return result
+    return np.array(result)
 
 
 def regridToReso(var, inlat, inlon, dlat, dlon, lat_idx=-2, lon_idx=-1,
@@ -1612,6 +1613,8 @@ class Plot2Quiver(Plot2D):
 
     def _plot(self):
 
+        self.ax.patch.set_color(self.fill_color)
+
         # -------------------Plot vectors-------------------
         quiver = self.ax.quiver(
             self.lons, self.lats, self.var, self.v, scale=self.method.scale,
@@ -1727,12 +1730,20 @@ def plot2(var, method, ax=None, legend='global',
             from gplot.lib.cartopy_utils import Plot2Cartopy as Plot2Geo
 
         if isgeomap and isgeo2:
-            plotobj = Plot2Geo(
-                var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
-                title=title, label_axes=label_axes, axes_grid=axes_grid,
-                fill_color=fill_color, projection=projection,
-                bmap=bmap, fontsize=fontsize,
-                legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
+            if geo_interface == 'basemap':
+                plotobj = Plot2Geo(
+                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    title=title, label_axes=label_axes, axes_grid=axes_grid,
+                    fill_color=fill_color, projection=projection,
+                    bmap=bmap, fontsize=fontsize,
+                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
+            elif geo_interface == 'cartopy':
+                plotobj = Plot2Geo(
+                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    title=title, label_axes=label_axes, axes_grid=axes_grid,
+                    fill_color=fill_color, projection=projection,
+                    fontsize=fontsize,
+                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
         else:
             plotobj = Plot2D(
                 var, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
