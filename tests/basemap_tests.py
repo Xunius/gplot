@@ -271,8 +271,13 @@ if __name__=='__main__':
     _, u, lons, lats=cdat_utils.checkGeomap(u, None, None)
 
     #----------------------Tests----------------------
-    test_basemap_default_cdat()
+    gplot.rcParams['fontsize']=4
+
     test_basemap_default()
+    test_basemap_default_cdat()
+
+    gplot.restoreParams()
+
     test_basemap_isofill_overflow()
     test_basemap_isofill_split()
     test_basemap_isoline()

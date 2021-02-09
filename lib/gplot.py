@@ -13,6 +13,7 @@ Update time: 2020-12-05 10:14:28.
 # --------Import modules--------------
 from __future__ import print_function
 import re
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
@@ -36,17 +37,25 @@ rcParams={
         'projection': 'cyl',
         'legend_ori': 'horizontal',
         'clean': False,
+        'bmap': None,
         'isgeomap': True,
         'fix_aspect': False,
         'nc_interface': 'cdat',
         'geo_interface': 'basemap',
-        'font_size': 12,
+        'fontsize': 12,
+        'verbose': True
         }
+
+_default_rcParams=copy.deepcopy(rcParams)
 
 # -----------------------------------------------------------------------
 # -                          Utility functions                          -
 # -----------------------------------------------------------------------
 
+def restoreParams():
+
+    global rcParams
+    rcParams.update(_default_rcParams)
 
 def mkscale(n1, n2, nc=12, zero=1):
     '''Copied from vcs/util.py
@@ -1653,7 +1662,7 @@ class Plot2Quiver(Plot2D):
 # -----------------------------------------------------------------------
 
 
-def plot2(var, method, ax=None, legend='global',
+def plot2old(var, method, ax=None, legend='global',
           xarray=None, yarray=None,
           var_v=None,
           title=None, label_axes=True, axes_grid=False, fill_color='0.8',
@@ -1665,6 +1674,111 @@ def plot2(var, method, ax=None, legend='global',
           bmap=None,
           fontsize=12,
           verbose=True):
+
+    nc_interface = nc_interface.lower()
+    if nc_interface not in ['cdat', 'iris', 'xarray', 'netcdf4']:
+        raise Exception(
+            "Netcdf data interface not supported: %s" % nc_interface)
+
+    geo_interface = geo_interface.lower()
+    if geo_interface not in ['basemap', 'cartopy']:
+        raise Exception(
+            "Geographical plotting interface not supported: %s" %
+            geo_interface)
+
+    if np.ndim(var) == 1:
+        raise Exception("<var> is 1D")
+
+    if nc_interface == 'cdat':
+        from gplot.lib.cdat_utils import checkGeomap
+    elif nc_interface == 'netcdf4':
+        from gplot.lib.netcdf4_utils import checkGeomap
+    elif nc_interface == 'iris':
+        raise Exception("Not implemented.")
+    elif nc_interface == 'xarray':
+        raise Exception("Not implemented.")
+
+    isgeo2, var2, xx, yy = checkGeomap(var, xarray, yarray)
+
+    # -------------------Quiver plot-------------------
+    if var_v is not None and isinstance(method, Quiver):
+        if geo_interface == 'basemap':
+            from gplot.lib.basemap_utils import Plot2QuiverBasemap as Plot2Geo
+        elif geo_interface == 'cartopy':
+            from gplot.lib.cartopy_utils import Plot2QuiverCartopy as Plot2Geo
+
+        isgeo2_v, var_v, _, _ = checkGeomap(var_v, xarray, yarray)
+
+        if fill_color == '0.8':
+            # change default to white for quiver plots
+            fill_color = 'w'
+
+        if isgeomap and isgeo2 and isgeo2_v:
+            plotobj = Plot2Geo(
+                var2, var_v, method, ax=ax, xarray=xx, yarray=yy,
+                title=title, label_axes=label_axes, axes_grid=axes_grid,
+                fill_color=fill_color, projection=projection,
+                bmap=bmap, fontsize=fontsize,
+                clean=clean, fix_aspect=fix_aspect)
+        else:
+            plotobj = Plot2Quiver(
+                var, var_v, method, ax=ax, xarray=xx, yarray=yy, title=title,
+                label_axes=label_axes, axes_grid=axes_grid, clean=clean, fontsize=fontsize,
+                fill_color=fill_color)
+
+    # ---------------Other types of plots---------------
+    else:
+        if geo_interface == 'basemap':
+            from gplot.lib.basemap_utils import Plot2Basemap as Plot2Geo
+        elif geo_interface == 'cartopy':
+            from gplot.lib.cartopy_utils import Plot2Cartopy as Plot2Geo
+
+        if isgeomap and isgeo2:
+            if geo_interface == 'basemap':
+                plotobj = Plot2Geo(
+                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    title=title, label_axes=label_axes, axes_grid=axes_grid,
+                    fill_color=fill_color, projection=projection,
+                    bmap=bmap, fontsize=fontsize,
+                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
+            elif geo_interface == 'cartopy':
+                plotobj = Plot2Geo(
+                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    title=title, label_axes=label_axes, axes_grid=axes_grid,
+                    fill_color=fill_color, projection=projection,
+                    fontsize=fontsize,
+                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
+        else:
+            plotobj = Plot2D(
+                var, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                title=title, label_axes=label_axes, axes_grid=axes_grid, fontsize=fontsize,
+                legend_ori=legend_ori, clean=clean, fill_color=fill_color)
+    plotobj.plot()
+
+    return plotobj
+
+def plot2(var, method, ax=None,
+          xarray=None, yarray=None,
+          var_v=None,
+          **kwargs):
+
+    # get kwargs
+    newkwargs=copy.deepcopy(rcParams)
+    newkwargs.update(kwargs)
+    nc_interface=newkwargs['nc_interface']
+    geo_interface=newkwargs['geo_interface']
+    fill_color=newkwargs['fill_color']
+    isgeomap=newkwargs['isgeomap']
+    title=newkwargs['title']
+    label_axes=newkwargs['label_axes']
+    axes_grid=newkwargs['axes_grid']
+    projection=newkwargs['projection']
+    bmap=newkwargs['bmap']
+    fontsize=newkwargs['fontsize']
+    clean=newkwargs['clean']
+    fix_aspect=newkwargs['fix_aspect']
+    legend=newkwargs['legend']
+    legend_ori=newkwargs['legend_ori']
 
     nc_interface = nc_interface.lower()
     if nc_interface not in ['cdat', 'iris', 'xarray', 'netcdf4']:
