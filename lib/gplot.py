@@ -349,11 +349,6 @@ def getColormap(cmap):
             exec(cmpstr)
         except:
             raise Exception("Color map name wrong.")
-    else:
-        pass
-
-    # -------------Shift colormap if needed-------------
-    #cmap = remappedColorMap(cmap, vmin, vmax, split)
 
     return cmap
 
@@ -430,8 +425,6 @@ def getSlab(var, index1=-1, index2=-2, verbose=True):
     Return <slab>: the (1st) slab from <var>.
                    E.g. <var> has dimension (12,1,241,480), getSlab(var) will
                    return the 1st time point with singleton dimension squeezed.
-
-    Update time: 2015-07-14 19:23:42.
     '''
 
     ndim = np.ndim(var)
@@ -1102,16 +1095,18 @@ class Plot2D(object):
 
         if self.method.color is not None:
             colors = [self.method.color]*len(self.method.levels)
+            cmap=None
         else:
             if self.method.black:
                 colors = ['k']*len(self.method.levels)
+                cmap=None
             else:
                 colors = None
 
         cs = self.ax.contour(
             self.lons, self.lats, self.var, self.method.levels,
             colors=colors,
-            cmap=self.method.cmap, extend=extend,
+            cmap=cmap, extend=extend,
             linewidths=self.method.linewidth,
             alpha=self.method.alpha,
             transform=self._transform)
@@ -1130,8 +1125,8 @@ class Plot2D(object):
 
         # For some reason the linewidth keyword in contour doesn't
         # work, has to set again.
-        for ii in range(len(cs.collections)):
-            cs.collections[ii].set_linewidth(self.method.linewidth)
+        #for ii in range(len(cs.collections)):
+            #cs.collections[ii].set_linewidth(self.method.linewidth)
 
         # ----------------Thicken some lines----------------
         if self.method.bold_lines is not None:

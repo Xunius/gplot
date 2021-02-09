@@ -9,7 +9,7 @@ from gplot.lib import gplot
 from gplot.lib import cdat_utils
 from gplot.lib.basemap_utils import Plot2Basemap, Plot2QuiverBasemap
 
-SAVE=True
+SAVE=False
 
 
 def test_basemap_default():
@@ -50,6 +50,16 @@ def test_basemap_isofill_split():
     ax=figure.add_subplot(111)
     iso=gplot.Isofill(var1, num=10, zero=1, split=2)
     gplot.plot2(var1, iso, ax, title='Isofill with force split', projection='cyl')
+    figure.show()
+
+    return
+
+def test_basemap_isoline():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isoline(var1-np.mean(var1), num=10, zero=1, split=2, black=True, linewidth=2)
+    gplot.plot2(var1-np.mean(var1), iso, ax, legend=None, title='Isoline', projection='cyl')
     figure.show()
 
     return
@@ -265,6 +275,7 @@ if __name__=='__main__':
     test_basemap_default()
     test_basemap_isofill_overflow()
     test_basemap_isofill_split()
+    test_basemap_isoline()
     test_basemap_boxfill()
     test_basemap_axes_grid()
     test_basemap_label_axes_False()

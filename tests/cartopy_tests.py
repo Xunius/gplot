@@ -11,7 +11,7 @@ from gplot.lib import gplot
 from gplot.lib import netcdf4_utils
 from gplot.lib.cartopy_utils import Plot2QuiverCartopy
 
-SAVE=True
+SAVE=False
 
 
 def test_cartopy_default():

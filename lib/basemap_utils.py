@@ -2,7 +2,6 @@
 
 Author: guangzhi XU (xugzhi1987@gmail.com)
 Update time: 2020-12-05 10:28:38.
-
 '''
 
 from __future__ import print_function
