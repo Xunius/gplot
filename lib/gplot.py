@@ -851,9 +851,9 @@ class Isofill(PlotMethod):
         self.cmap = getColormap(self.cmap)
         self.cmap, self.norm = self.adjustColormap(vmin=np.min(self.levels),
                                                    vmax=np.max(self.levels))
-        self.cmap = LinearSegmentedColormap('new_cmp2',
-                                            self.cmap._segmentdata,
-                                            N=len(self.levels)-1)
+        #self.cmap = LinearSegmentedColormap('new_cmp2',
+                                            #self.cmap._segmentdata,
+                                            #N=len(self.levels)-1)
 
         return
 
@@ -867,8 +867,9 @@ class Isoline(Isofill):
 
         super(
             Isoline, self).__init__(
-            vars, split=split, min_level=min_level, max_level=max_level, ql=ql,
-            qr=qr, vcenter=vcenter, cmap=cmap, verbose=verbose)
+            vars, num=num, zero=zero, split=split, levels=levels,
+            min_level=min_level, max_level=max_level, ql=ql, qr=qr,
+            vcenter=vcenter, cmap=cmap, verbose=verbose)
 
         self.black = black
         self.color = color
@@ -1111,6 +1112,7 @@ class Plot2D(object):
                 cmap=None
             else:
                 colors = None
+                cmap=None
 
         cs = self.ax.contour(
             self.lons, self.lats, self.var, self.method.levels,
@@ -1234,8 +1236,11 @@ class Plot2D(object):
         if self.axes_grid:
             self.ax.grid(True)
 
+        if self.label_axes is False:
+            return
+
         # --------Turn off lat/lon labels if required--------
-        if self.label_axes is False or self.clean:
+        if self.clean:
             self.ax.xaxis.set_ticklabels([])
             self.ax.yaxis.set_ticklabels([])
             return
@@ -1401,6 +1406,8 @@ class Plot2D(object):
             return
 
         if self.method.method in ['isofill', 'isoline']:
+            if len(self.cs.levels)<2:
+                return
             isdrawedges = True
         else:
             isdrawedges = False
