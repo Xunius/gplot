@@ -150,13 +150,14 @@ def test_basemap_subplots():
         ax=figure.add_subplot(3,2,2*ii+2)
         gplot.plot2(vii, iso2, ax, title=titles2[ii], legend='local', projection='cyl')
 
+    figure.tight_layout()
     figure.show()
 
     return
 
 def test_basemap_subplots_global_legend():
 
-    figure=plt.figure(figsize=(12,10),dpi=100)
+    figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=False)
     plot_vars=[var1[ii] for ii in range(4)]
     iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
     titles=['var1-%d' %ii for ii in range(4)]
@@ -164,6 +165,87 @@ def test_basemap_subplots_global_legend():
     for ii, vii in enumerate(plot_vars):
         ax=figure.add_subplot(2,2,ii+1)
         gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global', projection='cyl')
+
+    figure.show()
+
+    return
+
+def test_basemap_subplots_global_legend2():
+
+    figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=False)
+    plot_vars=[var1[ii] for ii in range(4)]
+    iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
+    titles=['var1-%d' %ii for ii in range(4)]
+
+    for ii, vii in enumerate(plot_vars):
+        ax=axes.flat[ii]
+        gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global', projection='cyl')
+
+    figure.show()
+
+    return
+
+def test_basemap_subplots_global_legend3():
+
+    figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=True)
+    plot_vars=[var1[ii] for ii in range(4)]
+    iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
+    titles=['var1-%d' %ii for ii in range(4)]
+
+    for ii, vii in enumerate(plot_vars):
+        ax=figure.add_subplot(2,2,ii+1)
+        gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global', projection='cyl')
+
+    figure.show()
+
+    return
+
+def test_basemap_subplots_global_legend4():
+
+    figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=True)
+    plot_vars=[var1[ii] for ii in range(4)]
+    iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
+    titles=['var1-%d' %ii for ii in range(4)]
+
+    for ii, vii in enumerate(plot_vars):
+        ax=axes.flat[ii]
+        gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global', projection='cyl')
+
+    figure.show()
+
+    return
+
+def test_basemap_subplots_global_legend5():
+
+    figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=False)
+    #figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=False)
+    plot_vars=[var1[ii] for ii in range(4)]
+    iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
+    titles=['var1-%d' %ii for ii in range(4)]
+
+    for ii, vii in enumerate(plot_vars):
+        ax=figure.add_subplot(2,2,ii+1)
+        #ax=axes.flat[ii]
+        gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global',
+                legend_ori='vertical', projection='cyl')
+
+    figure.show()
+
+    return
+
+def test_basemap_subplots_global_legend6():
+
+    #figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=False)
+    figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=True)
+    plot_vars=[var1[ii] for ii in range(4)]
+    iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
+    titles=['var1-%d' %ii for ii in range(4)]
+
+    for ii, vii in enumerate(plot_vars):
+        #ax=figure.add_subplot(2,2,ii+1)
+        ax=axes.flat[ii]
+        gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global',
+                legend_ori='vertical', projection='cyl')
 
     figure.show()
 
@@ -271,6 +353,7 @@ if __name__=='__main__':
     _, u, lons, lats=cdat_utils.checkGeomap(u, None, None)
 
     #----------------------Tests----------------------
+    '''
     gplot.rcParams['fontsize']=4
 
     test_basemap_default()
@@ -288,7 +371,14 @@ if __name__=='__main__':
     test_basemap_shading()
     test_basemap_stroke()
     test_basemap_subplots()
+    '''
     test_basemap_subplots_global_legend()
+    test_basemap_subplots_global_legend2()
+    test_basemap_subplots_global_legend3()
+    test_basemap_subplots_global_legend4()
+    test_basemap_subplots_global_legend5()
+    test_basemap_subplots_global_legend6()
+    '''
     test_basemap_quiver()
     test_basemap_quiver2()
     test_basemap_quiver_reso()
@@ -296,3 +386,4 @@ if __name__=='__main__':
     test_basemap_quiver_scale_keylength()
     test_basemap_quiver_overlay()
     test_basemap_quiver_overlay2()
+    '''

@@ -9,12 +9,14 @@ Update time: 2020-12-05 10:14:28.
 # TODO: make possible to use and change rcParams
 # TODO: add Plot2QuiverCarotpy
 # TODO: consider remove bmap input arg
+# TODO: global colorbar doesn't work with tight_layout()
 
 # --------Import modules--------------
 from __future__ import print_function
 import re
 import copy
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib.pyplot import MaxNLocator
@@ -42,7 +44,7 @@ rcParams={
         'fix_aspect': False,
         'nc_interface': 'cdat',
         'geo_interface': 'basemap',
-        'fontsize': 12,
+        'fontsize': 11,
         'verbose': True
         }
 
@@ -396,6 +398,20 @@ def getColorbarPad(ax, orientation, base_pad=0.0):
 
     return pad
 
+
+def createDummyTextBox(ax=None, fontsize=12):
+
+    if ax is None:
+        fig,ax=plt.subplots()
+
+    dummytext = ax.text(
+        0, 0, '0.0', zorder=-10, fontsize=fontsize,
+        alpha=0, transform=ax.transAxes)
+    dummybox = dummytext.get_window_extent(
+        ax.get_figure().canvas.get_renderer())
+    dummybox = dummybox.transformed(
+        ax.transAxes.inverted())
+    return dummybox
 
 def pickPoint(ax, color='y'):
     '''Pick points from plot and store coordinates.
@@ -1397,7 +1413,7 @@ class Plot2D(object):
 
         return cbar
 
-    def plotColorbar(self):
+    def plotColorbarold(self):
 
         if self.method.method in ['hatch', 'shading']:
             return
@@ -1424,17 +1440,20 @@ class Plot2D(object):
             if self.method.method in ['boxfill', 'pcolor']:
 
                 # Adjust position according to the existence of axis ticks
-                pad = getColorbarPad(self.ax, self.legend_ori)
+                pad = getColorbarPad(self.ax, self.legend_ori, base_pad=0.02)
 
                 # --------------Create a colorbar axis--------------
+                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
                 cax, kw = mcbar.make_axes_gridspec(
                     self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
                     fraction=0.07, aspect=35)
-                cbar = plt.colorbar(
-                    self.cs, cax=cax, orientation=self.legend_ori,
-                    drawedges=isdrawedges, extend=extend)
+                #cbar = plt.colorbar(
+                    #self.cs, cax=cax, orientation=self.legend_ori,
+                    #drawedges=isdrawedges, extend=extend)
 
-                ticks = cbar.get_ticks()
+                #ticks = cbar.get_ticks()
+                ticks=None
+
             elif self.method.method in ['isofill', 'isoline']:
                 # compute extra padding needed for the top side tick labels
                 if self.legend_ori == 'horizontal':
@@ -1448,26 +1467,25 @@ class Plot2D(object):
 
                     # Adjust position according to the existence of axis ticks
                     pad = getColorbarPad(
-                        self.ax, self.legend_ori, base_pad=dummybox.height*1.25)
+                        self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
                 else:
 
                     pad = getColorbarPad(self.ax, self.legend_ori)
 
                 ticks = getattr(self.method, 'levels', None)
-                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
                 cax, kw = mcbar.make_axes_gridspec(
                     self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
                     fraction=0.07, aspect=35)
-                cbar = plt.colorbar(
-                    self.cs, cax=cax, orientation=self.legend_ori, ticks=ticks,
-                    drawedges=isdrawedges)
+                #cbar = plt.colorbar(
+                    #self.cs, cax=cax, orientation=self.legend_ori, ticks=ticks,
+                    #drawedges=isdrawedges)
 
-                cbar = self.alternateTicks(cbar, ticks)
+                #cbar = self.alternateTicks(cbar, ticks)
 
             # -------------------Re-format ticks-------------------
-            cbar.ax.tick_params(labelsize=self._fontsize)
-            if all([ll == int(ll) for ll in ticks]):
-                ticks = [int(ll) for ll in ticks]
+            #cbar.ax.tick_params(labelsize=self._fontsize)
+            #if all([ll == int(ll) for ll in ticks]):
+                #ticks = [int(ll) for ll in ticks]
 
         # -----Use the 1st subplot as global color bar-----
         elif self.legend == 'global' and self.subidx == 1:
@@ -1475,17 +1493,55 @@ class Plot2D(object):
             fig = self.ax.get_figure()
 
             if self.legend_ori == 'horizontal':
-                dummytext = self.ax.text(
-                    0, 0, '0.0', zorder=-10, fontsize=self._fontsize, alpha=0,
-                    transform=self.ax.transAxes)
-                dummybox = dummytext.get_window_extent(
-                    self.ax.get_figure().canvas.get_renderer())
-                dummybox = dummybox.transformed(fig.transFigure.inverted())
-                pad = dummybox.height*2.6
-                height = 0.02
-                fig.subplots_adjust(bottom=0.18)
-                cax = self.ax.get_figure().add_axes(
-                    [0.15, 0.18-height-pad, 0.65, height])
+
+                import matplotlib
+                __import__('pdb').set_trace()
+                subplots=list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
+
+                # constrained_layout
+                if fig.get_constrained_layout():
+                    if len(subplots)>1:
+                        cbar=fig.colorbar(self.cs, ax=fig.axes, orientation=self.legend_ori,
+                                pad=0,
+                                shrink=0.85, fraction=0.07)
+                        cax=cbar.ax
+                    else:
+                        dummytext = self.ax.text(
+                            0, 0, '0.0', zorder=-10, fontsize=self._fontsize, alpha=0,
+                            transform=self.ax.transAxes)
+                        dummybox = dummytext.get_window_extent(
+                            self.ax.get_figure().canvas.get_renderer())
+                        dummybox = dummybox.transformed(fig.transFigure.inverted())
+                        pad = dummybox.height*3.0
+                        height = 0.02
+                        fig.subplots_adjust(bottom=0.18)
+                        cax = self.ax.get_figure().add_axes(
+                            [0.175, 0.18-height-pad, 0.65, height])
+                        #__import__('pdb').set_trace()
+                        #fig.tight_layout(rect=[0, 0.14, 1, 1])
+                        #[0.15, 0.18-height, 0.6, height])
+                        #cax, kw=mcbar.make_axes_gridspec(self.ax.get_figure().axes,
+                                #orientation=self.legend_ori, shrink=0.85,
+                                #pad=0.01,
+                                #fraction=0.07, aspect=35)
+                else:
+                    if len(subplots)>1:
+                        cbar=fig.colorbar(self.cs, ax=fig.axes, orientation=self.legend_ori,
+                                pad=0,
+                                shrink=0.85, fraction=0.07)
+                        cax=cbar.ax
+                    else:
+                        dummytext = self.ax.text(
+                            0, 0, '0.0', zorder=-10, fontsize=self._fontsize, alpha=0,
+                            transform=self.ax.transAxes)
+                        dummybox = dummytext.get_window_extent(
+                            self.ax.get_figure().canvas.get_renderer())
+                        dummybox = dummybox.transformed(fig.transFigure.inverted())
+                        pad = dummybox.height*3.0
+                        height = 0.02
+                        fig.subplots_adjust(bottom=0.18)
+                        cax = self.ax.get_figure().add_axes(
+                            [0.175, 0.18-height-pad, 0.65, height])
 
             else:
                 fig.subplots_adjust(right=0.90)
@@ -1507,11 +1563,133 @@ class Plot2D(object):
             # -----------------Re-format ticks-----------------
             cbar.ax.tick_params(labelsize=self._fontsize)
 
-            if all([ll == int(ll) for ll in ticks]):
-                ticks = [int(ll) for ll in ticks]
+            #if all([ll == int(ll) for ll in ticks]):
+                #ticks = [int(ll) for ll in ticks]
 
         elif self.legend == 'global' and self.subidx > 1:
             return
+
+        # --------------------Plot unit--------------------
+        var_units = getattr(self.var, 'units', '')
+        if var_units:
+            # option1: plot colorbar units below
+            # self.cbar.set_label(var_units,fontsize=self._fontsize)
+
+            # option2: plot colorbar units to the right or below, depending on
+            # orientation
+            if self.legend_ori == 'horizontal':
+                cbar_ax = cbar.ax
+                cbar_ax.text(1.02, 0.5, var_units, fontsize=self._fontsize,
+                             transform=cbar_ax.transAxes,
+                             horizontalalignment='left',
+                             verticalalignment='center')
+            elif self.legend_ori == 'vertical':
+                cbar_ax = cbar.ax
+                cbar_ax.text(
+                    0.5, -0.05, var_units, fontsize=self._fontsize,
+                    transform=cbar_ax.transAxes,
+                    horizontalalignment='left', verticalalignment='top')
+
+        return cbar
+
+
+    def plotColorbar(self):
+
+        if self.method.method in ['hatch', 'shading']:
+            return
+
+        if self.legend is None:
+            return
+
+        if self.method.method in ['isofill', 'isoline']:
+            if len(self.cs.levels)<2:
+                return
+            isdrawedges = True
+        else:
+            isdrawedges = False
+
+        if self.method.method in ['boxfill', 'pcolor']:
+            ticks=None
+            extend = Plot2D.getExtend(self.method)
+        else:
+            ticks = getattr(self.method, 'levels', None)
+            extend=None
+
+        if self.legend == 'global' and self.subidx > 1:
+            return
+
+        # --------------Create a colorbar axis--------------
+        if self.legend == 'local' or (
+                self.legend == 'global' and self.geo[0] * self.geo[1] == 1):
+
+            if self.method.method in ['boxfill', 'pcolor']:
+
+                # Adjust position according to the existence of axis ticks
+                pad = getColorbarPad(self.ax, self.legend_ori, base_pad=0.02)
+                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
+
+            elif self.method.method in ['isofill', 'isoline']:
+                if self.legend_ori == 'horizontal':
+                    # compute extra padding needed for the top side tick labels
+                    dummybox=createDummyTextBox(self.ax, self._fontsize)
+                    pad = getColorbarPad(
+                        self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
+                else:
+                    pad = getColorbarPad(self.ax, self.legend_ori, base_pad=0.02)
+
+            cax, kw = mcbar.make_axes_gridspec(
+                self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
+                fraction=0.07, aspect=35)
+
+
+        # -----Use the 1st subplot as global color bar-----
+        elif self.legend == 'global' and self.subidx == 1:
+
+            fig = self.ax.get_figure()
+            subplots=list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
+
+            if self.legend_ori == 'horizontal':
+                if len(subplots)>1:
+                    if fig.get_constrained_layout():
+                        cax, kw=mcbar.make_axes(subplots,
+                                orientation=self.legend_ori, shrink=0.85,
+                                pad=0.01,
+                                fraction=0.07, aspect=35)
+                    else:
+                        dummybox=createDummyTextBox(self.ax, self._fontsize)
+                        pad = dummybox.height*1.2
+                        cax, kw=mcbar.make_axes(subplots,
+                                orientation=self.legend_ori, shrink=0.85,
+                                pad=pad,
+                                fraction=0.07, aspect=35)
+                else:
+                    dummybox=createDummyTextBox(self.ax, self._fontsize)
+                    pad = dummybox.height*1.2
+                    height = 0.02
+                    fig.subplots_adjust(bottom=0.18)
+                    cax = self.ax.get_figure().add_axes(
+                        [0.175, 0.18-height-pad, 0.65, height])
+
+            elif self.legend_ori == 'vertical':
+                if len(subplots)>1:
+                    cax, kw=mcbar.make_axes(subplots,
+                            orientation=self.legend_ori, shrink=0.85,
+                            pad=0.02,
+                            fraction=0.07, aspect=35)
+                else:
+                    fig.subplots_adjust(right=0.90)
+                    cax = self.ax.get_figure().add_axes([0.95, 0.20, 0.02, 0.6])
+
+        #------------------Plot colorbar------------------
+        cbar = plt.colorbar(
+            self.cs, cax=cax, orientation=self.legend_ori,
+            ticks=ticks,
+            drawedges=isdrawedges, extend=extend)
+
+        # -------------------Re-format ticks-------------------
+        if self.method.method in ['isofill', 'isoline'] and self.legend_ori=='horizontal':
+            cbar = self.alternateTicks(cbar, ticks)
+        cbar.ax.tick_params(labelsize=self._fontsize)
 
         # --------------------Plot unit--------------------
         var_units = getattr(self.var, 'units', '')
