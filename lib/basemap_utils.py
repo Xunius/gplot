@@ -368,7 +368,7 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
     def __init__(
             self, u, v, method, xarray, yarray, ax=None,
             title=None, label_axes=True, axes_grid=False,
-            clean=False, fontsize=12, units=None, fill_color='w',
+            clean=False, fontsize=12, units=None, fill_color='w', curve=False,
             bmap=None, projection='cyl',
             fix_aspect=False, isdrawcoastlines=True,
             isdrawcountries=True, isdrawcontinents=False, isdrawrivers=False,
@@ -386,7 +386,8 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
         Plot2Quiver.__init__(
             self, u, v, method, ax=ax, xarray=xarray, yarray=yarray,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
-            clean=clean, fontsize=fontsize, units=units, fill_color=fill_color)
+            clean=clean, fontsize=fontsize, units=units, fill_color=fill_color,
+            curve=curve)
 
         Plot2Basemap.__init__(
             self, self.var, method, self.xarray, self.yarray, ax=ax, title=title,
@@ -416,11 +417,29 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
 
         self.ax.patch.set_color(self.fill_color)
 
+        if self.curve:
+            # modded from: https://stackoverflow.com/a/65607512/2005415
+            norm = np.sqrt(self.var**2 + self.v**2)
+            norm_flat = norm.flatten()
+
+            start_points = np.array([self.lons.flatten(),self.lats.flatten()]).T
+            scale = .2/np.max(norm)
+
+            for i in range(start_points.shape[0]):
+                self.bmap.streamplot(self.lons, self.lats, self.var, self.v,
+                        color=self.method.color,
+                        start_points=np.array([start_points[i,:]]),
+                        minlength=.25*norm_flat[i]*scale,
+                        maxlength=1.0*norm_flat[i]*scale,
+                        integration_direction='backward',
+                        density=10, arrowsize=0.0)
+
         # -------------------Plot vectors-------------------
         quiver = self.bmap.quiver(
             self.lons, self.lats, self.var, self.v, scale=self.method.scale,
             width=self.method.linewidth, latlon=True, alpha=self.method.alpha,
-            color=self.method.color)
+            color=self.method.color,
+            headwidth=4)
 
         return quiver
 

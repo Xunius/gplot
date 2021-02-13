@@ -135,6 +135,18 @@ def test_plot2d_quiver2():
 
     return
 
+def test_plot2d_quiver3():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    q=gplot.Quiver(step=8)
+    pquiver=gplot.Plot2Quiver(u, v, q, ax=ax, title='default quiver', curve=True)
+    pquiver.plot()
+
+    figure.show()
+
+    return
+
 def test_plot2d_quiver_step():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
@@ -245,9 +257,11 @@ if __name__=='__main__':
     test_plot2d_subplots()
     test_plot2d_subplots_global_legend()
 
-    '''
     test_plot2d_quiver()
     test_plot2d_quiver2()
+    '''
+    test_plot2d_quiver3()
+    '''
     test_plot2d_quiver_step()
     test_plot2d_quiver_step2()
     test_plot2d_quiver_reso()
@@ -255,3 +269,4 @@ if __name__=='__main__':
     test_plot2d_quiver_scale_keylength()
     test_plot2d_quiver_overlay()
     test_plot2d_quiver_overlay2()
+    '''

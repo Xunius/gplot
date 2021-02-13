@@ -275,6 +275,19 @@ def test_basemap_quiver2():
 
     return
 
+def test_basemap_quiver3():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    q=gplot.Quiver(step=8)
+    pquiver=Plot2QuiverBasemap(u, v, q, xarray=lons, yarray=lats,
+            ax=ax, title='default quiver', projection='cyl', curve=True)
+    pquiver.plot()
+
+    figure.show()
+
+    return
+
 def test_basemap_quiver_reso():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
@@ -372,15 +385,18 @@ if __name__=='__main__':
     test_basemap_stroke()
     test_basemap_subplots()
     '''
+    '''
     test_basemap_subplots_global_legend()
     test_basemap_subplots_global_legend2()
     test_basemap_subplots_global_legend3()
     test_basemap_subplots_global_legend4()
     test_basemap_subplots_global_legend5()
     test_basemap_subplots_global_legend6()
-    '''
     test_basemap_quiver()
     test_basemap_quiver2()
+    '''
+    test_basemap_quiver3()
+    '''
     test_basemap_quiver_reso()
     test_basemap_quiver_scale()
     test_basemap_quiver_scale_keylength()

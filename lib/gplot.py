@@ -24,6 +24,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colorbar as mcbar
 from matplotlib import colors
 from scipy.interpolate import RegularGridInterpolator
+from gplot.lib import modplot
 
 # Default colormap
 DEFAULT_CMAP = plt.cm.PRGn
@@ -1758,7 +1759,8 @@ class Plot2Quiver(Plot2D):
     def __init__(
             self, u, v, method, ax=None, xarray=None, yarray=None,
             title=None, label_axes=True, axes_grid=False,
-            clean=False, fontsize=12, units=None, fill_color='w'):
+            clean=False, fontsize=12, units=None, fill_color='w',
+            curve=False):
 
         Plot2D.__init__(self, u, method, ax=ax,
                         xarray=xarray, yarray=yarray,
@@ -1769,6 +1771,7 @@ class Plot2Quiver(Plot2D):
                         fill_color=fill_color)
 
         self.step = self.method.step
+        self.curve=curve
         self.units = units  # plot aside key
         self.v = getSlab(v)
 
@@ -1795,7 +1798,7 @@ class Plot2Quiver(Plot2D):
     def plot(self):
         self.quiver = self._plot()
         self.plotAxes()
-        self.qkey = self.plotkey()
+        #self.qkey = self.plotkey()
         self.plotTitle()
 
         return self.quiver
@@ -1804,11 +1807,17 @@ class Plot2Quiver(Plot2D):
 
         self.ax.patch.set_color(self.fill_color)
 
-        # -------------------Plot vectors-------------------
-        quiver = self.ax.quiver(
-            self.lons, self.lats, self.var, self.v, scale=self.method.scale,
-            scale_units=None, width=self.method.linewidth,
-            color=self.method.color, alpha=self.method.alpha, zorder=3)
+        if self.curve:
+            grains=int((len(self.xarray)+len(self.yarray)))
+            quiver = modplot.velovect(self.ax, self.lons, self.lats, self.var,
+                    self.v, scale=15,
+                    grains=grains, color=self.method.color)
+        else:
+            # -------------------Plot vectors-------------------
+            quiver = self.ax.quiver(
+                self.lons, self.lats, self.var, self.v, scale=self.method.scale,
+                scale_units=None, width=self.method.linewidth,
+                color=self.method.color, alpha=self.method.alpha, zorder=3)
 
         return quiver
 
