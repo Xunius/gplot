@@ -15,7 +15,10 @@ Update time: 2021-02-13 10:06:58.
 #       create all subplot axes before hand.
 # TODO: add Plot2QuiverCarotpy
 # TODO: consider remove bmap input arg
-# TODO: add warning to curved quiver
+# TODO make it possible to use barbs plot
+# TODO make it possible to use colormap to decode quiver magnitude, instead of
+# arrow length
+
 
 # --------Import modules--------------
 from __future__ import print_function
@@ -33,35 +36,37 @@ from matplotlib import colors
 from gplot.lib import modplot
 
 # Default parameters
-rcParams={
-        'legend': 'global',
-        'title': None,
-        'label_axes': True,
-        'axes_grid': False,
-        'fill_color': '0.8',
-        'projection': 'cyl',
-        'legend_ori': 'horizontal',
-        'clean': False,
-        'bmap': None,
-        'isgeomap': True,
-        'fix_aspect': False,
-        'nc_interface': 'cdat',
-        'geo_interface': 'basemap',
-        'fontsize': 11,
-        'verbose': True,
-        'default_cmap': plt.cm.RdBu_r
-        }
+rcParams = {
+    'legend': 'global',
+    'title': None,
+    'label_axes': True,
+    'axes_grid': False,
+    'fill_color': '0.8',
+    'projection': 'cyl',
+    'legend_ori': 'horizontal',
+    'clean': False,
+    'bmap': None,
+    'isgeomap': True,
+    'fix_aspect': False,
+    'nc_interface': 'cdat',
+    'geo_interface': 'basemap',
+    'fontsize': 11,
+    'verbose': True,
+    'default_cmap': plt.cm.RdBu_r
+}
 
-_default_rcParams=copy.deepcopy(rcParams)
+_default_rcParams = copy.deepcopy(rcParams)
 
 # -----------------------------------------------------------------------
 # -                          Utility functions                          -
 # -----------------------------------------------------------------------
 
+
 def restoreParams():
     '''Restore default parameters'''
     global rcParams
     rcParams.update(_default_rcParams)
+
 
 def mkscale(n1, n2, nc=12, zero=1):
     '''Create nice looking levels given a min and max.
@@ -174,6 +179,7 @@ def mkscale(n1, n2, nc=12, zero=1):
         raise Exception('ERROR scale not implemented in this function')
     return list(cnt)
 
+
 def index2Letter(index, verbose=True):
     '''Translate an integer index to letter index
 
@@ -228,7 +234,7 @@ def index2Letter(index, verbose=True):
     # -------------------Check inputs-------------------
     if index <= 0:
         raise Exception("<index> needs to be positive.")
-    return '(%s)' %(index_dict[(index-1)%26+1]*((index-1)//26+1))
+    return '(%s)' % (index_dict[(index-1) % 26+1]*((index-1)//26+1))
 
 
 def remappedColorMap(
@@ -376,7 +382,7 @@ def getColormap(cmap):
         cmap = rcParams['default_cmap']
     elif cmap is not None and isinstance(cmap, str):
         try:
-            cmap=getattr(plt.cm, cmap)
+            cmap = getattr(plt.cm, cmap)
         except:
             raise Exception("Color map name wrong.")
 
@@ -430,7 +436,7 @@ def createDummyTextBox(ax=None, fontsize=12):
     '''
 
     if ax is None:
-        fig,ax=plt.subplots()
+        fig, ax = plt.subplots()
 
     dummytext = ax.text(
         0, 0, '0.0', zorder=-10, fontsize=fontsize,
@@ -441,6 +447,7 @@ def createDummyTextBox(ax=None, fontsize=12):
         ax.transAxes.inverted())
 
     return dummybox
+
 
 def pickPoint(ax, color='y'):
     '''Pick points from plot and store coordinates.
@@ -525,7 +532,6 @@ def regridToReso(var, inlat, inlon, dlat, dlon, lat_idx=-2, lon_idx=-1,
         from scipy.interpolate import RegularGridInterpolator
     except:
         raise Exception("Regridding functionality requries scipy.")
-
 
     # ------------Check inputs------------
     if not isinstance(var, np.ndarray):
@@ -999,9 +1005,9 @@ class Isofill(PlotMethod):
         self.cmap = getColormap(self.cmap)
         self.cmap, self.norm = self.adjustColormap(vmin=np.min(self.levels),
                                                    vmax=np.max(self.levels))
-        #self.cmap = LinearSegmentedColormap('new_cmp2',
-                                            #self.cmap._segmentdata,
-                                            #N=len(self.levels)-1)
+        # self.cmap = LinearSegmentedColormap('new_cmp2',
+        # self.cmap._segmentdata,
+        # N=len(self.levels)-1)
 
         return
 
@@ -1203,10 +1209,11 @@ class Quiver(object):
 
         Keyword Args:
             step (int): sub-sample steps in both x- and  y- axes. U and V
-                data are sub-sampled using U[::step,::step].
+                data are sub-sampled using `U[::step,::step]`.
             reso (int or None): if not None, regrid input U and V data to a
                 lower resolution, measured in grids.
                 If both < reso > and <step> are given, use <reso>.
+                Requires scipy for this functionality.
             scale (float or None): see same arg as matplotlib.pyplot.quiver().
             keylength (float or None): see same arg as matplotlib.pylot.quiver().
             linewidth (float): line width.
@@ -1233,8 +1240,8 @@ class Plot2D(object):
 
     def __init__(self, var, method, ax=None, xarray=None, yarray=None,
                  title=None, label_axes=True, axes_grid=False, legend='global',
-                 legend_ori='horizontal', clean=False, fontsize=12,
-                 fill_color='0.8'):
+                 legend_ori='horizontal', clean=False, fontsize=None,
+                 fill_color=None):
         '''2D plotting class
 
         Args:
@@ -1255,6 +1262,8 @@ class Plot2D(object):
                 get an alphabetic subtitle if <ax> is a subplot, e.g. '(a)'
                 for the 1st subplot, '(d)' for the 4th one. If str and <ax>
                 is a subplot, prepend <title> with the alphabetic index.
+                One can force overriding the alphabetic index by giving a title
+                str in the format of '(x) xxxx', e.g. '(p) subplot-p'.
             label_axes (bool or 'all' or ((left_y, right_y, top_y, top_y),
                 (left_x, right_x, top_x, top_x)) or None): controls axis ticks and
                 ticklabels. If True, don't exert any inference other than
@@ -1285,6 +1294,16 @@ class Plot2D(object):
                 If data have missings, they will be shown as this color.
                 It is better to use a grey than while to better distinguish missings.
         '''
+
+        # get kwargs
+        fill_color = fill_color or rcParams['fill_color']
+        title = title or rcParams['title']
+        label_axes = label_axes or rcParams['label_axes']
+        axes_grid = axes_grid or rcParams['axes_grid']
+        fontsize = fontsize or rcParams['fontsize']
+        clean = clean or rcParams['clean']
+        legend = legend or rcParams['legend']
+        legend_ori = legend_ori or rcParams['legend_ori']
 
         self.var = var
         self.method = method
@@ -1406,6 +1425,10 @@ class Plot2D(object):
 
         Create the plot depending on method: isofill, isoline, boxfill, pcolor,
         hatch, or shading.
+
+        Returns:
+            self.cs (mappable): the mappable obj, e.g. return value from contour()
+                or contourf().
         '''
 
         # make masked value grey, otherwise they will be white
@@ -1466,14 +1489,14 @@ class Plot2D(object):
 
         if self.method.color is not None:
             colors = [self.method.color]*len(self.method.levels)
-            cmap=None
+            cmap = None
         else:
             if self.method.black:
                 colors = ['k']*len(self.method.levels)
-                cmap=None
+                cmap = None
             else:
                 colors = None
-                cmap=None
+                cmap = None
 
         cs = self.ax.contour(
             self.lons, self.lats, self.var, self.method.levels,
@@ -1484,8 +1507,6 @@ class Plot2D(object):
             transform=self._transform)
 
         # -----------------Set line styles-----------------
-        # for some reason it's not giving me dashed line for negatives.
-        # have to set myself
         if self.method.dash_negative:
             for ii in range(len(cs.collections)):
                 cii = cs.collections[ii]
@@ -1494,11 +1515,6 @@ class Plot2D(object):
                     cii.set_linestyle('dashed')
                 else:
                     cii.set_linestyle('solid')
-
-        # For some reason the linewidth keyword in contour doesn't
-        # work, has to set again.
-        #for ii in range(len(cs.collections)):
-            #cs.collections[ii].set_linewidth(self.method.linewidth)
 
         # ----------------Thicken some lines----------------
         if self.method.bold_lines is not None:
@@ -1621,16 +1637,16 @@ class Plot2D(object):
         # --------Turn off lat/lon labels if required--------
         if self.clean or not self.label_axes:
             self.ax.tick_params(left=False, labelleft=False, right=False,
-                    labelright=False, top=False, labeltop=False,
-                    bottom=False, labelbottom=False)
+                                labelright=False, top=False, labeltop=False,
+                                bottom=False, labelbottom=False)
             return
 
         if self.label_axes == 'all':
             parallels = [1, 1, 0, 0]
             meridians = [0, 0, 1, 1]
         elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 4:
-            parallels = [0,]*4
-            meridians = [0,]*4
+            parallels = [0, ]*4
+            meridians = [0, ]*4
             for ii in [0, 1]:
                 if self.label_axes[ii]:
                     parallels[ii] = 1
@@ -1733,25 +1749,6 @@ class Plot2D(object):
         formatter = cbar.ax.xaxis.get_major_formatter()
         ticklabels = formatter.format_ticks(ticks)
 
-        # cbar.ax.set_xticklabels(ticks)  # NOTE: do not use this.
-        # this will give ugly strings for floats, like 1.4999999999999 instead
-        # of 1.5
-
-        # The secondary_xaxis approach would put one additional scale label,
-        # e.g. 1e-5 for the secondary x axis.
-        # twinax=cbar.ax.secondary_xaxis('top')
-        # twinax.set_xticks(ticks[::2])
-        # twinax.tick_params(labelsize=self.fontsize)
-
-        '''
-        # NOTE: use formatter instead:
-        if self.legend_ori=='horizontal':
-            ticklabels = [i.get_text() for i in cbar.ax.get_xticklabels()]
-        elif self.legend_ori=='vertical':
-            ticklabels = [i.get_text() for i in cbar.ax.get_yticklabels()]
-            ticklabels=formatter.format_ticks(ticks)
-        '''
-
         # tick bottom
         cbar.set_ticks(lbot)
 
@@ -1795,9 +1792,14 @@ class Plot2D(object):
 
         return cbar
 
-
     def plotColorbar(self):
-        '''Plot colorbar'''
+        '''Plot colorbar
+
+        Returns:
+            cbar (matplotlib colorbar obj): colorbar obj.
+
+        Only creates a colorbar for isofill/contourf or isoline/contour plots.
+        '''
 
         if self.method.method in ['hatch', 'shading']:
             return
@@ -1806,18 +1808,18 @@ class Plot2D(object):
             return
 
         if self.method.method in ['isofill', 'isoline']:
-            if len(self.cs.levels)<2:
+            if len(self.cs.levels) < 2:
                 return
             isdrawedges = True
         else:
             isdrawedges = False
 
         if self.method.method in ['boxfill', 'pcolor']:
-            ticks=None
+            ticks = None
             extend = Plot2D.getExtend(self.method)
         else:
             ticks = getattr(self.method, 'levels', None)
-            extend=None
+            extend = None
 
         if self.legend == 'global' and self.subidx > 1:
             return
@@ -1835,39 +1837,37 @@ class Plot2D(object):
             elif self.method.method in ['isofill', 'isoline']:
                 if self.legend_ori == 'horizontal':
                     # compute extra padding needed for the top side tick labels
-                    dummybox=createDummyTextBox(self.ax, self._fontsize)
+                    dummybox = createDummyTextBox(self.ax, self._fontsize)
                     pad = getColorbarPad(
                         self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
                 else:
-                    pad = getColorbarPad(self.ax, self.legend_ori, base_pad=0.02)
+                    pad = getColorbarPad(
+                        self.ax, self.legend_ori, base_pad=0.02)
 
             cax, kw = mcbar.make_axes_gridspec(
                 self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
                 fraction=0.07, aspect=35)
 
-
         # -----Use the 1st subplot as global color bar-----
         elif self.legend == 'global' and self.subidx == 1:
 
             fig = self.ax.get_figure()
-            subplots=list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
+            subplots = list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
 
             if self.legend_ori == 'horizontal':
-                if len(subplots)>1:
+                if len(subplots) > 1:
                     if fig.get_constrained_layout():
-                        cax, kw=mcbar.make_axes(subplots,
-                                orientation=self.legend_ori, shrink=0.85,
-                                pad=0.01,
-                                fraction=0.07, aspect=35)
+                        cax, kw = mcbar.make_axes(
+                            subplots, orientation=self.legend_ori, shrink=0.85,
+                            pad=0.01, fraction=0.07, aspect=35)
                     else:
-                        dummybox=createDummyTextBox(self.ax, self._fontsize)
+                        dummybox = createDummyTextBox(self.ax, self._fontsize)
                         pad = dummybox.height*1.2
-                        cax, kw=mcbar.make_axes(subplots,
-                                orientation=self.legend_ori, shrink=0.85,
-                                pad=pad,
-                                fraction=0.07, aspect=35)
+                        cax, kw = mcbar.make_axes(
+                            subplots, orientation=self.legend_ori, shrink=0.85,
+                            pad=pad, fraction=0.07, aspect=35)
                 else:
-                    dummybox=createDummyTextBox(self.ax, self._fontsize)
+                    dummybox = createDummyTextBox(self.ax, self._fontsize)
                     pad = dummybox.height*1.2
                     height = 0.02
                     fig.subplots_adjust(bottom=0.18)
@@ -1875,23 +1875,24 @@ class Plot2D(object):
                         [0.175, 0.18-height-pad, 0.65, height])
 
             elif self.legend_ori == 'vertical':
-                if len(subplots)>1:
-                    cax, kw=mcbar.make_axes(subplots,
-                            orientation=self.legend_ori, shrink=0.85,
-                            pad=0.02,
-                            fraction=0.07, aspect=35)
+                if len(subplots) > 1:
+                    cax, kw = mcbar.make_axes(
+                        subplots, orientation=self.legend_ori, shrink=0.85,
+                        pad=0.02, fraction=0.07, aspect=35)
                 else:
                     fig.subplots_adjust(right=0.90)
-                    cax = self.ax.get_figure().add_axes([0.95, 0.20, 0.02, 0.6])
+                    cax = self.ax.get_figure().add_axes(
+                        [0.95, 0.20, 0.02, 0.6])
 
-        #------------------Plot colorbar------------------
+        # ------------------Plot colorbar------------------
         cbar = plt.colorbar(
             self.cs, cax=cax, orientation=self.legend_ori,
             ticks=ticks,
             drawedges=isdrawedges, extend=extend)
 
         # -------------------Re-format ticks-------------------
-        if self.method.method in ['isofill', 'isoline'] and self.legend_ori=='horizontal':
+        if self.method.method in [
+                'isofill', 'isoline'] and self.legend_ori == 'horizontal':
             cbar = self.alternateTicks(cbar, ticks)
         cbar.ax.tick_params(labelsize=self._fontsize)
 
@@ -1919,6 +1920,15 @@ class Plot2D(object):
         return cbar
 
     def plotTitle(self):
+        '''Plot title
+
+        Use self.title as the figure title if self.ax is the single plot in the
+        figure. If None, automatically get an alphabetic subtitle if self.ax is
+        a subplot, e.g. '(a)' for the 1st subplot, '(d)' for the 4th one.
+        If self.title is str and self.ax is a subplot, prepend self.title with
+        the alphabetic index. One can force overriding the alphabetic index
+        by giving a title str in the format of '(x) xxxx', e.g. '(p) subplot-p'.
+        '''
 
         if self.clean or self.title == 'none':
             return
@@ -1949,21 +1959,70 @@ class Plot2D(object):
 
 
 class Plot2Quiver(Plot2D):
-    '''General purpose 2D vector plots.
+    '''2D vector plotting class
 
-    For geo vector plots, see Plot2QuiverBasemap, which handles geo-map plotting
-    and map projections.
+    For geographical vector plots, see Plot2QuiverBasemap or Plot2QuiverCartopy,
+    which handles equivalent plotting with geographical map projections.
     '''
-
-    # TODO make it possible to use barbs plot
-    # TODO make it possible to use colormap to decode magnitude, instead of
-    # arrow length
 
     def __init__(
             self, u, v, method, ax=None, xarray=None, yarray=None,
             title=None, label_axes=True, axes_grid=False,
-            clean=False, fontsize=12, units=None, fill_color='w',
+            clean=False, fontsize=None, units=None, fill_color='w',
             curve=False):
+        '''
+        Args:
+            u,v (ndarray): x- and y-component of velocity to plot.
+                Mush have dimensions >= 2. For data with rank>2, take the slab
+                from the last 2 dimensions.
+            method (Quiver obj): quiver plotting method. Determines how to plot
+                the quivers.
+        Keyword Args:
+            ax (matplotlib axis or None): axis obj. Determines where to plot.
+                If None, create a new.
+            xarray (1darray or None): array to use as the x-coordinates. If None,
+                use the indices of the last dimension: np.arange(slab.shape[-1]).
+            yarray (1darray or None): array to use as the y-coordinates. If None,
+                use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
+            title (str or None): text as the figure title if <ax> is the
+                single plot in the figure. If None, automatically
+                get an alphabetic subtitle if <ax> is a subplot, e.g. '(a)'
+                for the 1st subplot, '(d)' for the 4th one. If str and <ax>
+                is a subplot, prepend <title> with the alphabetic index.
+                One can force overriding the alphabetic index by giving a title
+                str in the format of '(x) xxxx', e.g. '(p) subplot-p'.
+            label_axes (bool or 'all' or ((left_y, right_y, top_y, top_y),
+                (left_x, right_x, top_x, top_x)) or None): controls axis ticks and
+                ticklabels. If True, don't exert any inference other than
+                changing the ticklabel fontsize, and let matplotlib put the
+                ticks and ticklabels (i.e. default only left and bottom axes).
+                If False, turn off all ticks and ticklabels.
+                If 'all', plot ticks and ticks labels on all 4 sides.
+                If ((left_y, right_y, top_y, top_y), (left_x, right_x, top_x, top_x)),
+                specify which side to plot ticks/ticklabels. Each swith is a
+                bool or binary. If None, will set the ticks/ticklabels such
+                that the interior subplots have no ticks/ticklabels, edge
+                subplots have ticks/ticklabels on the outer edges, i.e. similar
+                as the 'sharex', 'sharey' options. Location of the subplot
+                is determined from return of `ax.get_geometry()`.
+            axes_grid (bool): whether to add axis grid lines.
+            clean (bool): if False, don't plot axis ticks/ticklabels, colorbar,
+                axis grid lines or title.
+            fontsize (int): font size for ticklabels, title, axis labels, colorbar
+                ticklabels.
+            units (str or None): unit of <u> and <v>. Will be plotted next to
+                the reference vector.
+            fill_color (str or color tuple): color to use as background color.
+                If data have missings, they will be shown as this color.
+            curve (bool): whether to plot quivers as curved vectors. Experimental.
+        '''
+
+        fill_color = fill_color or rcParams['fill_color']
+        title = title or rcParams['title']
+        label_axes = label_axes or rcParams['label_axes']
+        axes_grid = axes_grid or rcParams['axes_grid']
+        fontsize = fontsize or rcParams['fontsize']
+        clean = clean or rcParams['clean']
 
         Plot2D.__init__(self, u, method, ax=ax,
                         xarray=xarray, yarray=yarray,
@@ -1974,7 +2033,7 @@ class Plot2Quiver(Plot2D):
                         fill_color=fill_color)
 
         self.step = self.method.step
-        self.curve=curve
+        self.curve = curve
         self.units = units  # plot aside key
         self.v = getSlab(v)
 
@@ -1999,33 +2058,56 @@ class Plot2Quiver(Plot2D):
         self.xarray, self.yarray, self.lons, self.lats = self.getGrid()
 
     def plot(self):
+        '''Main plotting interface
+
+        Calls the core plotting function self._plot(), which handles the
+        2D plotting depending using quiver plotting method.
+        Then plots axes, quiverkey and title.
+
+        Returns:
+            self.quiver (mappable): the quiver obj, i.e. return value quiver().
+        '''
+
         self.quiver = self._plot()
         self.plotAxes()
-        #self.qkey = self.plotkey()
+        self.ax.set_xlim(np.min(self.xarray), np.max(self.xarray))
+        self.ax.set_ylim(np.min(self.yarray), np.max(self.yarray))
+        self.qkey = self.plotkey()
         self.plotTitle()
 
         return self.quiver
 
     def _plot(self):
+        '''Core quiver plotting function
+
+        Returns:
+            self.quiver (mappable): the quiver obj, i.e. return value quiver().
+        '''
 
         self.ax.patch.set_color(self.fill_color)
 
         if self.curve:
-            warnings.warn('\n#<gplot warning>: The curved quiver functionality is experimental.\n')
-            grains=int((len(self.xarray)+len(self.yarray)))
+            warnings.warn(
+                '#<gplot warning>: The curved quiver functionality is experimental.')
+            grains = int((len(self.xarray)+len(self.yarray)))
             quiver = modplot.velovect(self.ax, self.lons, self.lats, self.var,
-                    self.v, scale=15,
-                    grains=grains, color=self.method.color)
-        else:
-            # -------------------Plot vectors-------------------
-            quiver = self.ax.quiver(
-                self.lons, self.lats, self.var, self.v, scale=self.method.scale,
-                scale_units=None, width=self.method.linewidth,
-                color=self.method.color, alpha=self.method.alpha, zorder=3)
+                                      self.v, scale=15,
+                                      grains=grains, color=self.method.color)
+
+        # -------------------Plot vectors-------------------
+        quiver = self.ax.quiver(
+            self.lons, self.lats, self.var, self.v, scale=self.method.scale,
+            scale_units=None, width=self.method.linewidth,
+            color=self.method.color, alpha=self.method.alpha, zorder=3)
 
         return quiver
 
     def plotkey(self):
+        '''Plot the reference quiver key
+
+        Returns:
+            quiverkey (quiver key).
+        '''
 
         if self.method.keylength is None:
             # compute a keylength based on vector magnitudes
@@ -2060,123 +2142,91 @@ class Plot2Quiver(Plot2D):
 # -----------------------------------------------------------------------
 
 
-def plot2old(var, method, ax=None, legend='global',
-          xarray=None, yarray=None,
-          var_v=None,
-          title=None, label_axes=True, axes_grid=False, fill_color='0.8',
-          projection='cyl', legend_ori='horizontal', clean=False,
-          isgeomap=True,
-          fix_aspect=False,
-          nc_interface='cdat',
-          geo_interface='basemap',
-          bmap=None,
-          fontsize=12,
-          verbose=True):
+def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
+    '''Wrapper 2D plotting interface function
 
-    nc_interface = nc_interface.lower()
-    if nc_interface not in ['cdat', 'iris', 'xarray', 'netcdf4']:
-        raise Exception(
-            "Netcdf data interface not supported: %s" % nc_interface)
-
-    geo_interface = geo_interface.lower()
-    if geo_interface not in ['basemap', 'cartopy']:
-        raise Exception(
-            "Geographical plotting interface not supported: %s" %
-            geo_interface)
-
-    if np.ndim(var) == 1:
-        raise Exception("<var> is 1D")
-
-    if nc_interface == 'cdat':
-        from gplot.lib.cdat_utils import checkGeomap
-    elif nc_interface == 'netcdf4':
-        from gplot.lib.netcdf4_utils import checkGeomap
-    elif nc_interface == 'iris':
-        raise Exception("Not implemented.")
-    elif nc_interface == 'xarray':
-        raise Exception("Not implemented.")
-
-    isgeo2, var2, xx, yy = checkGeomap(var, xarray, yarray)
-
-    # -------------------Quiver plot-------------------
-    if var_v is not None and isinstance(method, Quiver):
-        if geo_interface == 'basemap':
-            from gplot.lib.basemap_utils import Plot2QuiverBasemap as Plot2Geo
-        elif geo_interface == 'cartopy':
-            from gplot.lib.cartopy_utils import Plot2QuiverCartopy as Plot2Geo
-
-        isgeo2_v, var_v, _, _ = checkGeomap(var_v, xarray, yarray)
-
-        if fill_color == '0.8':
-            # change default to white for quiver plots
-            fill_color = 'w'
-
-        if isgeomap and isgeo2 and isgeo2_v:
-            plotobj = Plot2Geo(
-                var2, var_v, method, ax=ax, xarray=xx, yarray=yy,
-                title=title, label_axes=label_axes, axes_grid=axes_grid,
-                fill_color=fill_color, projection=projection,
-                bmap=bmap, fontsize=fontsize,
-                clean=clean, fix_aspect=fix_aspect)
-        else:
-            plotobj = Plot2Quiver(
-                var, var_v, method, ax=ax, xarray=xx, yarray=yy, title=title,
-                label_axes=label_axes, axes_grid=axes_grid, clean=clean, fontsize=fontsize,
-                fill_color=fill_color)
-
-    # ---------------Other types of plots---------------
-    else:
-        if geo_interface == 'basemap':
-            from gplot.lib.basemap_utils import Plot2Basemap as Plot2Geo
-        elif geo_interface == 'cartopy':
-            from gplot.lib.cartopy_utils import Plot2Cartopy as Plot2Geo
-
-        if isgeomap and isgeo2:
-            if geo_interface == 'basemap':
-                plotobj = Plot2Geo(
-                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
-                    title=title, label_axes=label_axes, axes_grid=axes_grid,
-                    fill_color=fill_color, projection=projection,
-                    bmap=bmap, fontsize=fontsize,
-                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
-            elif geo_interface == 'cartopy':
-                plotobj = Plot2Geo(
-                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
-                    title=title, label_axes=label_axes, axes_grid=axes_grid,
-                    fill_color=fill_color, projection=projection,
-                    fontsize=fontsize,
-                    legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
-        else:
-            plotobj = Plot2D(
-                var, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
-                title=title, label_axes=label_axes, axes_grid=axes_grid, fontsize=fontsize,
-                legend_ori=legend_ori, clean=clean, fill_color=fill_color)
-    plotobj.plot()
-
-    return plotobj
-
-def plot2(var, method, ax=None,
-          xarray=None, yarray=None,
-          var_v=None,
-          **kwargs):
+    Args:
+        var (ndarray): input data to plot. Determines what to plot.
+            Mush have dimensions >= 2.
+            For data with rank>2, take the slab from the last 2 dimensions.
+        method (PlotMethod): plotting method. Determines how to plot.
+            Could be Isofill, Isoline, Boxfill, Quiver, Shading, Hatch, GIS.
+    Keyword Args:
+        ax (matplotlib axis or None): axis obj. Determines where to plot.
+            If None, create a new.
+        xarray (1darray or None): array to use as the x-coordinates. If None,
+            use the indices of the last dimension: np.arange(slab.shape[-1]).
+        yarray (1darray or None): array to use as the y-coordinates. If None,
+            use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
+        var_v (ndarray or None): if a quiver plot (method is Quiver), the
+            y-component of the velocity data, and <var> is the x-component.
+        nc_interface (str): netcdf data interfacing module, could be 'cdat',
+            'xarray', 'iris' or 'netcdf4'.
+        geo_interface (str): geographical plotting module, could be 'basemap',
+            or 'cartopy'.
+        isgeomap (bool): whether to use geographcial plot.
+        projection (str): if use geographical plot, the map projection.
+        bmap (basemap obj or None): reuse an existing basemap obj if not None.
+    Other keyword args:
+        title (str or None): text as the figure title if <ax> is the
+            single plot in the figure. If None, automatically
+            get an alphabetic subtitle if <ax> is a subplot, e.g. '(a)'
+            for the 1st subplot, '(d)' for the 4th one. If str and <ax>
+            is a subplot, prepend <title> with the alphabetic index.
+            One can force overriding the alphabetic index by giving a title
+            str in the format of '(x) xxxx', e.g. '(p) subplot-p'.
+        label_axes (bool or 'all' or ((left_y, right_y, top_y, top_y),
+            (left_x, right_x, top_x, top_x)) or None): controls axis ticks and
+            ticklabels. If True, don't exert any inference other than
+            changing the ticklabel fontsize, and let matplotlib put the
+            ticks and ticklabels (i.e. default only left and bottom axes).
+            If False, turn off all ticks and ticklabels.
+            If 'all', plot ticks and ticks labels on all 4 sides.
+            If ((left_y, right_y, top_y, top_y), (left_x, right_x, top_x, top_x)),
+            specify which side to plot ticks/ticklabels. Each swith is a
+            bool or binary. If None, will set the ticks/ticklabels such
+            that the interior subplots have no ticks/ticklabels, edge
+            subplots have ticks/ticklabels on the outer edges, i.e. similar
+            as the 'sharex', 'sharey' options. Location of the subplot
+            is determined from return of `ax.get_geometry()`.
+        axes_grid (bool): whether to add axis grid lines.
+        legend (str or None): controls whether to share colorbar or not.
+            A colorbar is only plotted for Isofill/Isoline plots.
+            If None, don't put colorbar. If 'local', <ax> has its own
+            colorbar. If 'global', all subplots in the figure share a
+            single colorbar, which is created by the 1st subplot in the
+            figure, which is determined from the return of `ax.get_geometry()`.
+        legend_ori (str): orientation of colorbar. 'horizontal' or 'vertical'.
+        clean (bool): if False, don't plot axis ticks/ticklabels, colorbar,
+            axis grid lines or title.
+        fontsize (int): font size for ticklabels, title, axis labels, colorbar
+            ticklabels.
+        fix_aspect (bool): passed to the constructor of basemap: `Basemap(xxx,
+            fix_aspect=fix_aspect)`.
+        fill_color (str or color tuple): color to use as background color.
+            If data have missings, they will be shown as this color.
+            It is better to use a grey than while to better distinguish missings.
+    Returns:
+        plotobj (Plot2D obj).
+    '''
 
     # get kwargs
-    newkwargs=copy.deepcopy(rcParams)
+    newkwargs = copy.deepcopy(rcParams)
     newkwargs.update(kwargs)
-    nc_interface=newkwargs['nc_interface']
-    geo_interface=newkwargs['geo_interface']
-    fill_color=newkwargs['fill_color']
-    isgeomap=newkwargs['isgeomap']
-    title=newkwargs['title']
-    label_axes=newkwargs['label_axes']
-    axes_grid=newkwargs['axes_grid']
-    projection=newkwargs['projection']
-    bmap=newkwargs['bmap']
-    fontsize=newkwargs['fontsize']
-    clean=newkwargs['clean']
-    fix_aspect=newkwargs['fix_aspect']
-    legend=newkwargs['legend']
-    legend_ori=newkwargs['legend_ori']
+    nc_interface = newkwargs['nc_interface']
+    geo_interface = newkwargs['geo_interface']
+    fill_color = newkwargs['fill_color']
+    isgeomap = newkwargs['isgeomap']
+    title = newkwargs['title']
+    label_axes = newkwargs['label_axes']
+    axes_grid = newkwargs['axes_grid']
+    projection = newkwargs['projection']
+    bmap = newkwargs['bmap']
+    fontsize = newkwargs['fontsize']
+    clean = newkwargs['clean']
+    fix_aspect = newkwargs['fix_aspect']
+    legend = newkwargs['legend']
+    legend_ori = newkwargs['legend_ori']
 
     nc_interface = nc_interface.lower()
     if nc_interface not in ['cdat', 'iris', 'xarray', 'netcdf4']:
@@ -2226,8 +2276,8 @@ def plot2(var, method, ax=None,
         else:
             plotobj = Plot2Quiver(
                 var, var_v, method, ax=ax, xarray=xx, yarray=yy, title=title,
-                label_axes=label_axes, axes_grid=axes_grid, clean=clean, fontsize=fontsize,
-                fill_color=fill_color)
+                label_axes=label_axes, axes_grid=axes_grid, clean=clean,
+                fontsize=fontsize, fill_color=fill_color)
 
     # ---------------Other types of plots---------------
     else:
@@ -2254,8 +2304,9 @@ def plot2(var, method, ax=None,
         else:
             plotobj = Plot2D(
                 var, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
-                title=title, label_axes=label_axes, axes_grid=axes_grid, fontsize=fontsize,
-                legend_ori=legend_ori, clean=clean, fill_color=fill_color)
+                title=title, label_axes=label_axes, axes_grid=axes_grid,
+                fontsize=fontsize, legend_ori=legend_ori, clean=clean,
+                fill_color=fill_color)
     plotobj.plot()
 
     return plotobj

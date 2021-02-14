@@ -447,7 +447,7 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
 
         if self.curve:
             # modded from: https://stackoverflow.com/a/65607512/2005415
-            warnings.warn('\n#<gplot warning>: The curved quiver functionality is experimental.\n')
+            warnings.warn('#<gplot warning>: The curved quiver functionality is experimental.')
             norm = np.sqrt(self.var**2 + self.v**2)
             norm_flat = norm.flatten()
 
