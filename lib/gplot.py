@@ -13,7 +13,6 @@ Update time: 2021-02-13 10:06:58.
 # TODO: global colorbar placement is not smart enough. *UPDATE* made some changes
 #       recommended to use constrained_layout in creating the figure and
 #       create all subplot axes before hand.
-# TODO: make scipy dependency optional
 # TODO: add Plot2QuiverCarotpy
 # TODO: consider remove bmap input arg
 # TODO: add warning to curved quiver
@@ -30,7 +29,6 @@ from matplotlib.pyplot import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colorbar as mcbar
 from matplotlib import colors
-from scipy.interpolate import RegularGridInterpolator
 from gplot.lib import modplot
 
 # Default parameters
@@ -521,6 +519,12 @@ def regridToReso(var, inlat, inlon, dlat, dlon, lat_idx=-2, lon_idx=-1,
         newlat (1darray): if <return_coords> is True, the new latitude coordinates.
         newlon (1darray): if <return_coords> is True, the new longitude coordinates.
     '''
+
+    try:
+        from scipy.interpolate import RegularGridInterpolator
+    except:
+        raise Exception("Regridding functionality requries scipy.")
+
 
     # ------------Check inputs------------
     if not isinstance(var, np.ndarray):
