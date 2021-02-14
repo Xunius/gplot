@@ -302,7 +302,6 @@ if __name__=='__main__':
     test_plot2d_label_axes_False()
     test_plot2d_label_axes_all()
     test_plot2d_label_axes_specified()
-    '''
     test_plot2d_quiver()
     test_plot2d_quiver2()
     test_plot2d_quiver3()
@@ -311,5 +310,6 @@ if __name__=='__main__':
     test_plot2d_quiver_reso()
     test_plot2d_quiver_scale()
     test_plot2d_quiver_scale_keylength()
+    '''
     test_plot2d_quiver_overlay()
     test_plot2d_quiver_overlay2()

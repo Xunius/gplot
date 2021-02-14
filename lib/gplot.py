@@ -1331,6 +1331,11 @@ class Plot2D(object):
         # ---------------Get geo and fontsize---------------
         self.geo, self.subidx, self._fontsize = self.getGeo()
 
+        # Store a singleton record to avoid the ax.get_geometry() result
+        # get changes after creating a local colorbar:
+        if not hasattr(self.ax, '_gplot_geo'):
+            self.ax._gplot_geo = self.geo + (self.subidx,)
+
     # ---------------------Get grid---------------------
 
     def getGrid(self):
@@ -1586,8 +1591,8 @@ class Plot2D(object):
 
         return cs
 
-    def getLabelBool(self, geo, idx):
-        '''Decide whether to plot axis ticks and ticklabels on the 4 sides.
+    def getLabelBoolForShareXY(self, geo, idx):
+        '''Decide ticks and ticklabels on the 4 sides with shared x and y.
 
         Args:
             geo (nrows, ncols): subplot layout of the figure.
@@ -1623,6 +1628,39 @@ class Plot2D(object):
 
         return parallels, meridians
 
+    def getLabelBool(self):
+        '''Decide whether to plot axis ticks and ticklabels on the 4 sides.
+
+        Returns:
+            parallels (list): boolean flag for the x-axis ticks/labels on 4 sides:
+                [left, right, top, bottom]
+            meridians (list): boolean flag for the y-axis ticks/labels on 4 sides:
+                [left, right, top, bottom]
+        '''
+
+        if self.clean or not self.label_axes:
+            parallels = [0, 0, 0, 0]
+            meridians = [0, 0, 0, 0]
+
+        elif self.label_axes == 'all':
+            parallels = [1, 1, 0, 0]
+            meridians = [0, 0, 1, 1]
+
+        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 4:
+            parallels = [0, ]*4
+            meridians = [0, ]*4
+            for ii in [0, 1]:
+                if self.label_axes[ii]:
+                    parallels[ii] = 1
+            for ii in [2, 3]:
+                if self.label_axes[ii]:
+                    meridians[ii] = 1
+        else:
+            parallels, meridians = self.getLabelBoolForShareXY(
+                    self.ax._gplot_geo, self.subidx)
+
+        return parallels, meridians
+
     def plotAxes(self):
         '''Plot axes ticks and ticklabels'''
 
@@ -1641,20 +1679,7 @@ class Plot2D(object):
                                 bottom=False, labelbottom=False)
             return
 
-        if self.label_axes == 'all':
-            parallels = [1, 1, 0, 0]
-            meridians = [0, 0, 1, 1]
-        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 4:
-            parallels = [0, ]*4
-            meridians = [0, ]*4
-            for ii in [0, 1]:
-                if self.label_axes[ii]:
-                    parallels[ii] = 1
-            for ii in [2, 3]:
-                if self.label_axes[ii]:
-                    meridians[ii] = 1
-        else:
-            parallels, meridians = self.getLabelBool(self.geo, self.subidx)
+        parallels, meridians = self.getLabelBool()
 
         # get tick labels
         loclatlon = MaxNLocator(nbins='auto', steps=[
@@ -1809,6 +1834,8 @@ class Plot2D(object):
 
         if self.method.method in ['isofill', 'isoline']:
             if len(self.cs.levels) < 2:
+                return
+            if self.method.method == 'isoline' and self.method.black:
                 return
             isdrawedges = True
         else:
@@ -2061,7 +2088,7 @@ class Plot2Quiver(Plot2D):
         '''Main plotting interface
 
         Calls the core plotting function self._plot(), which handles the
-        2D plotting depending using quiver plotting method.
+        2D plotting using quiver plotting method.
         Then plots axes, quiverkey and title.
 
         Returns:

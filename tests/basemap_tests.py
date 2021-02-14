@@ -367,7 +367,7 @@ def test_basemap_quiver_overlay():
     gplot.plot2(var1, iso, ax, title='default Plot2D', projection='cyl')
 
     pquiver=Plot2QuiverBasemap(u, v, q, xarray=lons, yarray=lats,
-            ax=ax, clean=True, title='quiver overlay', projection='cyl')
+            ax=ax, title='quiver overlay', projection='cyl')
     pquiver.plot()
     figure.show()
 
@@ -382,7 +382,7 @@ def test_basemap_quiver_overlay2():
     gplot.plot2(var1, iso, ax, title='default Plot2D', projection='cyl')
 
     gplot.plot2(u, q, var_v=v, xarray=lons, yarray=lats,
-            ax=ax, clean=True, title='quiver overlay', projection='cyl')
+            ax=ax, title='quiver overlay', projection='cyl')
     figure.show()
 
     return
@@ -424,14 +424,14 @@ if __name__=='__main__':
     test_basemap_subplots_global_legend4()
     test_basemap_subplots_global_legend5()
     test_basemap_subplots_global_legend6()
+    '''
+    '''
     test_basemap_quiver()
     test_basemap_quiver2()
-    '''
     test_basemap_quiver3()
-    '''
     test_basemap_quiver_reso()
     test_basemap_quiver_scale()
     test_basemap_quiver_scale_keylength()
+    '''
     test_basemap_quiver_overlay()
     test_basemap_quiver_overlay2()
-    '''
