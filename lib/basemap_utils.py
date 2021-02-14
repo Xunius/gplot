@@ -6,6 +6,7 @@ Update time: 2020-12-05 10:28:38.
 
 from __future__ import print_function
 import numpy as np
+from matplotlib import ticker
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import MaxNLocator
 from mpl_toolkits.basemap import Basemap
@@ -292,50 +293,76 @@ class Plot2Basemap(Plot2D):
         if self.label_axes is False or self.clean:
             parallels = [0, 0, 0, 0]
             meridians = [0, 0, 0, 0]
-            # self.ax.xaxis.set_ticklabels([]) Doesn't work
         elif self.label_axes == 'all':
             parallels = [1, 1, 0, 0]
-            meridians = [0, 0, 0, 1]
-        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 2 and\
-                len(self.label_axes[0]) == 4 and len(self.label_axes[1]) == 4:
-            # TODO: add docstring for this
-            parallels, meridians = self.label_axes
+            meridians = [0, 0, 1, 1]
+        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 4:
+            parallels = [0,]*4
+            meridians = [0,]*4
+            for ii in [0, 1]:
+                if self.label_axes[ii]:
+                    parallels[ii] = 1
+            for ii in [2, 3]:
+                if self.label_axes[ii]:
+                    meridians[ii] = 1
         else:
             parallels, meridians = self.getLabelBool(self.geo, self.subidx)
 
-        # ------------------Set grid lines------------------
-        if self.axes_grid is False or self.clean:
-            # linewidth=0
-            zorder = -2
-        else:
-            # linewidth=0.5
-            zorder = -2  # use ax.grid(True) instead
-
-        # -----------------Draw axes/lables/ticks-----------------
+        # -----------------format axes/lables/ticks-----------------
         lon_labels_proj, _ = self.bmap(lon_labels, np.zeros(len(lon_labels)))
         _, lat_labels_proj = self.bmap(np.zeros(len(lat_labels)), lat_labels)
         self.ax.set_yticks(lat_labels_proj)
         self.ax.set_xticks(lon_labels_proj)
-        self.ax.tick_params(axis='both', which='major',
-                            labelsize=self._fontsize)
-        self.ax.xaxis.set_ticklabels([])
-        self.ax.yaxis.set_ticklabels([])
-        self.ax.xaxis.set_ticks_position('both')
-        self.ax.yaxis.set_ticks_position('both')
 
-        # NOTE: this is to fix the flawed PDF save issue.
-        # for some reason when using linewidth=0 in drawmeridians() or
-        # drawparallels(), the saved PDF won't display properly in some PDF
-        # viewers (e.g. Xreader or Adobe Reader).
-        self.bmap.drawparallels(lat_labels, labels=parallels,
-                                labelstyle='+/-', fontsize=self._fontsize,
-                                color=self.fill_color,  # to hide the lines where mask is True
-                                zorder=zorder,
-                                xoffset=0.010*abs(self.bmap.xmax-self.bmap.xmin))
-        self.bmap.drawmeridians(
-            lon_labels, labels=meridians, labelstyle='+/-',
-            fontsize=self._fontsize, zorder=zorder, color=self.fill_color,
-            yoffset=0.012 * abs(self.bmap.ymax - self.bmap.ymin))
+        lon_default_formatter = self.ax.xaxis.get_major_formatter()
+        lon_ticklabels=lon_default_formatter.format_ticks(lon_labels_proj)
+
+        lat_default_formatter = self.ax.yaxis.get_major_formatter()
+        lat_ticklabels=lat_default_formatter.format_ticks(lat_labels_proj)
+
+        @ticker.FuncFormatter
+        def newformatterlon(x, pos):
+            return '' if pos is None else u'%s\u00B0' %(lon_ticklabels[pos])
+
+        @ticker.FuncFormatter
+        def newformatterlat(x, pos):
+            # latex \circ seems to give a smaller circle than the unicode
+            #return '' if pos is None else r'%s$^{\circ}$' %(lat_ticklabels[pos])
+            return '' if pos is None else u'%s\u00B0' %(lat_ticklabels[pos])
+
+        self.ax.xaxis.set_major_formatter(newformatterlon)
+        self.ax.yaxis.set_major_formatter(newformatterlat)
+
+        if meridians[3] == 1:
+            self.ax.set_xticks(lon_labels)
+            labelbottom = True
+        else:
+            labelbottom = False
+
+        if meridians[2] == 1:
+            self.ax.set_xticks(lon_labels)
+            labeltop = True
+        else:
+            labeltop = False
+
+        if parallels[0] == 1:
+            self.ax.set_yticks(lat_labels)
+            labelleft = True
+        else:
+            labelleft = False
+
+        if parallels[1] == 1:
+            self.ax.set_yticks(lat_labels)
+            labelright = True
+        else:
+            labelright = False
+
+        self.ax.tick_params(axis='both', which='major',
+                            labelsize=self._fontsize,
+                            labelleft=labelleft, labelright=labelright,
+                            labeltop=labeltop, labelbottom=labelbottom,
+                            left=labelleft, right=labelright,
+                            top=labeltop, bottom=labelbottom)
 
         # -------Label parallels in polar projections-------
         if self.projection in ['npaeqd', 'nplaea', 'npstere', 'spaeqd',

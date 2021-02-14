@@ -1,15 +1,22 @@
-'''Basic geographical plotting functions.
+'''Basic 2D plotting functions and classes.
+
+Contains:
+    * utility functions.
+    * plotting method classes.
+    * plotting wrapper classes, from which equivalent geographical plotting
+      classes are inherited.
 
 Author: guangzhi XU (xugzhi1987@gmail.com)
-Update time: 2020-12-05 10:14:28.
+Update time: 2021-02-13 10:06:58.
 '''
 
-# TODO: global colorbar placement is not smart enough
+# TODO: global colorbar placement is not smart enough. *UPDATE* made some changes
+#       recommended to use constrained_layout in creating the figure and
+#       create all subplot axes before hand.
 # TODO: make scipy dependency optional
-# TODO: make possible to use and change rcParams
 # TODO: add Plot2QuiverCarotpy
 # TODO: consider remove bmap input arg
-# TODO: global colorbar doesn't work with tight_layout()
+# TODO: add warning to curved quiver
 
 # --------Import modules--------------
 from __future__ import print_function
@@ -25,10 +32,6 @@ import matplotlib.colorbar as mcbar
 from matplotlib import colors
 from scipy.interpolate import RegularGridInterpolator
 from gplot.lib import modplot
-
-# Default colormap
-DEFAULT_CMAP = plt.cm.PRGn
-DEFAULT_CMAP = plt.cm.RdBu_r
 
 # Default parameters
 rcParams={
@@ -46,7 +49,8 @@ rcParams={
         'nc_interface': 'cdat',
         'geo_interface': 'basemap',
         'fontsize': 11,
-        'verbose': True
+        'verbose': True,
+        'default_cmap': plt.cm.RdBu_r
         }
 
 _default_rcParams=copy.deepcopy(rcParams)
@@ -56,25 +60,27 @@ _default_rcParams=copy.deepcopy(rcParams)
 # -----------------------------------------------------------------------
 
 def restoreParams():
-
+    '''Restore default parameters'''
     global rcParams
     rcParams.update(_default_rcParams)
 
 def mkscale(n1, n2, nc=12, zero=1):
-    '''Copied from vcs/util.py
+    '''Create nice looking levels given a min and max.
 
-    Function: mkscale
-
-    Description of function:
-    This function return a nice scale given a min and a max
-
-    option:
-    nc # Maximum number of intervals (default=12)
-    zero # Not all implemented yet so set to 1 but values will be:
+    Args:
+        n1, n2 (floats): min and max levels between which to create levels.
+    Keyword Args:
+        nc (int): suggested number of levels. Note that the resulant levels
+                  may not have the exact number of levels as required.
+        zero (int): Not all implemented yet so set to 1 but values will be:
            -1: zero MUST NOT be a contour
             0: let the function decide # NOT IMPLEMENTED
             1: zero CAN be a contour  (default)
             2: zero MUST be a contour
+    Returns:
+        cnt (list): a list of levels between approximately <n1> and <n2>,
+                    with a number of levels more or less as <nc>.
+
     Examples of Use:
     >>> vcs.mkscale(0,100)
     [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
@@ -89,6 +95,7 @@ def mkscale(n1, n2, nc=12, zero=1):
     >>> vcs.mkscale(2,20,zero=2)
     [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
 
+    Copied from vcs/util.py
     '''
     if n1 == n2:
         return [n1]
@@ -168,13 +175,13 @@ def mkscale(n1, n2, nc=12, zero=1):
         raise Exception('ERROR scale not implemented in this function')
     return list(cnt)
 
-
 def index2Letter(index, verbose=True):
     '''Translate an integer index to letter index
 
-    <index>: integer index for a subplot.
-
-    Return <letter>: corresponding letter index for <index>.
+    Args:
+        index (int): integer index for a subplot.
+    Returns:
+        letter (str): corresponding letter index for <index>.
 
     <index> to letter indexing is defined as following:
     ----------------------------------------------------
@@ -184,46 +191,45 @@ def index2Letter(index, verbose=True):
        2                            (b)
        3                            (c)
        ...                          ...
+       27                           (aa)
+       ...
+       52                           (zz)
     ----------------------------------------------------
     '''
 
-    # ---------------Create <index> dict---------------
     index_dict = {
-        1: '(a)',
-        2: '(b)',
-        3: '(c)',
-        4: '(d)',
-        5: '(e)',
-        6: '(f)',
-        7: '(g)',
-        8: '(h)',
-        9: '(i)',
-        10: '(j)',
-        11: '(k)',
-        12: '(l)',
-        13: '(m)',
-        14: '(n)',
-        15: '(o)',
-        16: '(p)',
-        17: '(q)',
-        18: '(r)',
-        19: '(s)',
-        20: '(t)',
-        21: '(u)',
-        22: '(v)',
-        23: '(w)',
-        24: '(x)',
-        25: '(y)',
-        26: '(z)'
+        1: 'a',
+        2: 'b',
+        3: 'c',
+        4: 'd',
+        5: 'e',
+        6: 'f',
+        7: 'g',
+        8: 'h',
+        9: 'i',
+        10: 'j',
+        11: 'k',
+        12: 'l',
+        13: 'm',
+        14: 'n',
+        15: 'o',
+        16: 'p',
+        17: 'q',
+        18: 'r',
+        19: 's',
+        20: 't',
+        21: 'u',
+        22: 'v',
+        23: 'w',
+        24: 'x',
+        25: 'y',
+        26: 'z'
     }
 
     # -------------------Check inputs-------------------
     if index <= 0:
         raise Exception("<index> needs to be positive.")
-    if index > 26:
-        return str(index)
-    else:
-        return index_dict[index]
+    return '(%s)' %(index_dict[(index-1)%26+1]*((index-1)//26+1))
 
 
 def remappedColorMap(
@@ -243,6 +249,7 @@ def remappedColorMap(
             2: force split, if vmin<0 and vmax>0, same as <split>==1;
                 If vmin<0 and vmax<0, map onto 1st half [0,0.5];
                 If vmin>0 and vmax>0, map onto 2nd half (0.5,1].
+    NOTE: not in use any more.
     '''
 
     # -----------Return cmap if not splitting-----------
@@ -299,19 +306,23 @@ def remappedColorMap(
 def remappedColorMap2(cmap, vmin, vmax, vcenter, name='shiftedcmap'):
     '''Re-map the colormap to split positives and negatives.
 
-    <cmap> : The matplotlib colormap to be altered
-    <vmin> : float, minimal level in data.
-    <vmax> : float, maximal level in data.
-    <split>: int, control behavior of negative and positive values\
-            0: Do not split negatives and positives, map onto entire\
-               range of [0,1];
-            1: split only when vmin<0 and vmax>0, otherwise\
-               map onto entire range of [0,1];
-               If split is to be applied, negative values are mapped onto first half [0,0.5],
-               and postives onto second half (0.5,1].
-            2: force split, if vmin<0 and vmax>0, same as <split>==1;
-                If vmin<0 and vmax<0, map onto 1st half [0,0.5];
-                If vmin>0 and vmax>0, map onto 2nd half (0.5,1].
+    Args:
+        cmap (colormap): the matplotlib colormap to be altered.
+        vmin (float): minimal level in data.
+        vmax (float): maximal level in data.
+        vcenter (float): central level in data.
+    Keyword Args:
+        name (str): name for the altered colormap.
+    Returns:
+        newcmap (colormap): re-mapped colormap such that:
+            if vmin < vmax <= vcenter:
+                0   in color map corresponds to vmin
+                0.5   in color map corresponds to vmax
+            if vcenter <= vmin < vmax:
+                0.5   in color map corresponds to vmin
+                1.0   in color map corresponds to vmax
+            E.g. if vcenter=0, this splits a diverging colormap to use
+            only the negative/positive half the original colors.
     '''
 
     # ------------Resample cmap if splitting------------
@@ -352,13 +363,21 @@ def remappedColorMap2(cmap, vmin, vmax, vcenter, name='shiftedcmap'):
 
 
 def getColormap(cmap):
+    '''Get a colormap
+
+    Args:
+        cmap (matplotlib colormap, str or None): if colormap, return as is.
+            if str, get a colormap by name: getattr(plt.cm, cmap).
+            If None, use default of rcParams['default_cmap'].
+    Returns:
+        cmap (matplotlib colormap): matplotlib colormap.
+    '''
 
     if cmap is None:
-        cmap = DEFAULT_CMAP
+        cmap = rcParams['default_cmap']
     elif cmap is not None and isinstance(cmap, str):
-        cmpstr = 'cmap=plt.cm.'+cmap
         try:
-            exec(cmpstr)
+            cmap=getattr(plt.cm, cmap)
         except:
             raise Exception("Color map name wrong.")
 
@@ -401,6 +420,15 @@ def getColorbarPad(ax, orientation, base_pad=0.0):
 
 
 def createDummyTextBox(ax=None, fontsize=12):
+    '''Create a dummy text and return its box
+
+    Keyword Args:
+        ax (plt axis or None): given plt axis to use to create the text. If
+            None, create a new.
+        fontsize (int): font size to create the text.
+    Returns:
+        dummybox (matplotlib Bbox): bbox of the dummy text box.
+    '''
 
     if ax is None:
         fig,ax=plt.subplots()
@@ -412,18 +440,18 @@ def createDummyTextBox(ax=None, fontsize=12):
         ax.get_figure().canvas.get_renderer())
     dummybox = dummybox.transformed(
         ax.transAxes.inverted())
+
     return dummybox
 
 def pickPoint(ax, color='y'):
     '''Pick points from plot and store coordinates.
 
-    <ax>: matplotlib axis obj.
-    <color>: str or RGB tuple. Color of picked points.
-
-    Return <points>: list of (x,y) coordinates.
-
-    Author: guangzhi XU (xugzhi1987@gmail.com; guangzhi.xu@outlook.com)
-    Update time: 2017-05-24 09:27:45.
+    Args:
+        ax (matplotlib axis): axis from whose plot to pick points.
+    Keyword Args:
+        color (str or RGB tuple): Color of picked points.
+    Returns:
+        points (list): list of (x,y) coordinates.
     '''
     import pylab
     points = []
@@ -445,12 +473,15 @@ def pickPoint(ax, color='y'):
 def getSlab(var, index1=-1, index2=-2, verbose=True):
     '''Get a slab from a variable
 
-    <var>: nd array with dimension >=2.
-    <index1>,<index2>: str, indices denoting the dimensions from which a slab is to slice.
-
-    Return <slab>: the (1st) slab from <var>.
-                   E.g. <var> has dimension (12,1,241,480), getSlab(var) will
-                   return the 1st time point with singleton dimension squeezed.
+    Args:
+        var: (ndarray): ndarray with dimension >=2.
+    Keyword Args:
+        index1,index2 (int): indices denoting the dimensions that define a 2d
+            slab.
+    Returns:
+        slab (ndarray): the (1st) slab from <var>.
+           E.g. <var> has dimension (12,1,241,480), getSlab(var) will
+           return the 1st time point with singleton dimension squeezed.
     '''
 
     ndim = np.ndim(var)
@@ -572,15 +603,16 @@ def regridToReso(var, inlat, inlon, dlat, dlon, lat_idx=-2, lon_idx=-1,
 
 
 def getMissingMask(slab):
-    '''Get a bindary denoting missing (masked or nan).
+    '''Get a bindary array denoting missing (masked or nan).
 
-    <slab>: nd array, possibly contains masked values or nans.
-
-    Return <mask>: nd bindary, 1s for missing, 0s otherwise.
+    Args:
+        slab (ndarray): input array that may contain masked values or nans.
+    Returns:
+        mask (ndarray): bindary array with same shape as <slab> with 1s for
+            missing, 0s otherwise.
     '''
 
     nan_mask = np.where(np.isnan(slab), 1, 0)
-
     if not hasattr(slab, 'mask'):
         mask_mask = np.zeros(slab.shape)
     else:
@@ -588,7 +620,6 @@ def getMissingMask(slab):
             mask_mask = np.zeros(slab.shape)
         else:
             mask_mask = np.where(slab.mask, 1, 0)
-
     mask = np.where(mask_mask+nan_mask > 0, 1, 0)
 
     return mask
@@ -761,6 +792,42 @@ class TwoSlopeNorm(Normalize):
 class PlotMethod(object):
     def __init__(self, vars, split=2, min_level=None, max_level=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
+        '''Base plotting method class
+
+        Args:
+            vars (ndarray or list): if ndarray, input data to create 2d plot
+                from. If list, a list of ndarrays.
+        Keyword Args:
+            split (int): whether to split the colormap at a given value (<vcenter>) into
+                2 parts or not. Can be 1 of these 3 values:
+                0: do not split.
+                1: split at <vcenter> only if range of data in <vars> strides
+                   <vcenter>.
+                2: force split at <vcenter>.
+                If split and data range strides across <vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If split and data range on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            min_level (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            max_level (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            ql (float or None): specified minimum left quantile to plot. If None,
+                determine from <min_level> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            qr (float or None): specified maximum right quantile (e.g. 0.01 for
+                the 99th percentile) to plot. If None,
+                determine from <max_level> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            vcenter (float): value at which to split the colormap. Default to 0.
+            cmap (matplotlib colormap or None): colormap to use. If None, use
+                the default in rcParams['default_cmap'].
+            verbose (bool): whether to print some info or not.
+        '''
 
         self.split = split
         self.min_level = min_level
@@ -785,28 +852,36 @@ class PlotMethod(object):
         self.vars = vars
 
     def computeRange(self):
+        '''Get the range of data and the range to plot'''
 
         # -------------------Get max/min-------------------
         self.vmin, self.vmax, self.data_min, self.data_max = getRange(
             self.vars, self.min_level, self.max_level, self.ql, self.qr)
 
     def computeExt(self, vmin, vmax):
+        '''Determine overflow on both ends'''
 
         self.ext_1 = True if self.data_min < vmin else False
         self.ext_2 = True if self.data_max > vmax else False
 
         return
 
-    def adjustColormap(self, vmin=None, vmax=None):
+    def adjustColormap(self, vmin, vmax):
+        '''Adjust colormap for split and get normalization for colormap
 
-        if vmin is None:
-            if not hasattr(self, 'vmin'):
-                self.computeRange()
-            vmin = self.vmin
-        if vmax is None:
-            if not hasattr(self, 'vmax'):
-                self.computeRange()
-            vmax = self.vmax
+        Args:
+            vmin,vmax (float or None): min and max value to plot.
+        Returns:
+            cmap (matplotlib colormap): adjusted colormap.
+                If <self.split> and <vmin>,<vmax> stride across <self.vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If <split.split> and <vmin>,<vmax> on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            norm (TwoSlopeNorm or None): only if split the entire colormap, return
+                a TwoSlopeNorm. Otherwise return None.
+        '''
 
         cmap = self.cmap
 
@@ -841,6 +916,57 @@ class Isofill(PlotMethod):
                  stroke=False, stroke_color='0.3', stroke_lw=0.2,
                  stroke_linestyle='-',
                  verbose=True):
+        '''Plotting method for isofill/contourf plots
+
+        Args:
+            vars (ndarray or list): if ndarray, input data to create 2d plot
+                from. If list, a list of ndarrays.
+        Keyword Args:
+            num (int): the desired number of contour levels. NOTE that the
+                resultant number may be slightly different.
+            zero (int): whether 0 is allowed to be a contour level. 0 for not allowed,
+                1 otherwise.
+            split (int): whether to split the colormap at a given value (<vcenter>) into
+                2 parts or not. Can be 1 of these 3 values:
+                0: do not split.
+                1: split at <vcenter> only if range of data in <vars> strides
+                   <vcenter>.
+                2: force split at <vcenter>.
+                If split and data range strides across <vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If split and data range on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            levels (list, tuple or 1darray): specified contour levels. If not
+                given, compute contour levels using <num>, <zero>, <min_level>,
+                <max_level>, <ql>, <qr>.
+            min_level (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            max_level (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            ql (float or None): specified minimum left quantile to plot. If None,
+                determine from <min_level> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            qr (float or None): specified maximum right quantile (e.g. 0.01 for
+                the 99th percentile) to plot. If None,
+                determine from <max_level> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            vcenter (float): value at which to split the colormap. Default to 0.
+            cmap (matplotlib colormap or None): colormap to use. If None, use
+                the default in rcParams['default_cmap'].
+            stroke (bool): whether to overlay a layer of thin contour lines on
+                top of contourf.
+            stroke_color (str or color tuple): color to plot the overlying
+                thin contour lines.
+            stroke_lw (float): line width to plot the overlying thin contour
+                lines.
+            stroke_linestyle (str): line style to plot the overlying thin
+                contour lines.
+            verbose (bool): whether to print some info or not.
+        '''
 
         super(
             Isofill, self).__init__(
@@ -881,6 +1007,57 @@ class Isoline(Isofill):
                  vcenter=0, cmap=None,
                  black=False, color=None, linewidth=1.0, alpha=1.0,
                  dash_negative=True, bold_lines=None, verbose=True):
+        '''Plotting method for isoline/contour plots
+
+        Args:
+            vars (ndarray or list): if ndarray, input data to create 2d plot
+                from. If list, a list of ndarrays.
+        Keyword Args:
+            num (int): the desired number of contour levels. NOTE that the
+                resultant number may be slightly different.
+            zero (int): whether 0 is allowed to be a contour level. 0 for not allowed,
+                1 otherwise.
+            split (int): whether to split the colormap at a given value (<vcenter>) into
+                2 parts or not. Can be 1 of these 3 values:
+                0: do not split.
+                1: split at <vcenter> only if range of data in <vars> strides
+                   <vcenter>.
+                2: force split at <vcenter>.
+                If split and data range strides across <vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If split and data range on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            levels (list, tuple or 1darray): specified contour levels. If not
+                given, compute contour levels using <num>, <zero>, <min_level>,
+                <max_level>, <ql>, <qr>.
+            min_level (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            max_level (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            ql (float or None): specified minimum left quantile to plot. If None,
+                determine from <min_level> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            qr (float or None): specified maximum right quantile (e.g. 0.01 for
+                the 99th percentile) to plot. If None,
+                determine from <max_level> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            vcenter (float): value at which to split the colormap. Default to 0.
+            cmap (matplotlib colormap or None): colormap to use. If None, use
+                the default in rcParams['default_cmap'].
+            black (bool): use black lines instead of colored lines.
+            color (str or color tuple): color to plot the contour lines.
+            linewidth (float): line width to plot the contour lines.
+            alpha (float): transparent level, in range of [0, 1].
+            dash_negative (bool): whether to use dashed lines for negative
+                contours.
+            bols_lines (list if None): if a list, values to highlight using bold lines
+                (line width scaled by 2.0).
+            verbose (bool): whether to print some info or not.
+        '''
 
         super(
             Isoline, self).__init__(
@@ -902,6 +1079,45 @@ class Isoline(Isofill):
 class Boxfill(PlotMethod):
     def __init__(self, vars, split=2, min_level=None, max_level=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
+        '''Plotting method for boxfill/imshow plots
+
+        Args:
+            vars (ndarray or list): if ndarray, input data to create 2d plot
+                from. If list, a list of ndarrays.
+        Keyword Args:
+            split (int): whether to split the colormap at a given value (<vcenter>) into
+                2 parts or not. Can be 1 of these 3 values:
+                0: do not split.
+                1: split at <vcenter> only if range of data in <vars> strides
+                   <vcenter>.
+                2: force split at <vcenter>.
+                If split and data range strides across <vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If split and data range on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            levels (list, tuple or 1darray): specified contour levels. If not
+                given, compute contour levels using <num>, <zero>, <min_level>,
+                <max_level>, <ql>, <qr>.
+            min_level (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            max_level (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            ql (float or None): specified minimum left quantile to plot. If None,
+                determine from <min_level> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            qr (float or None): specified maximum right quantile (e.g. 0.01 for
+                the 99th percentile) to plot. If None,
+                determine from <max_level> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            vcenter (float): value at which to split the colormap. Default to 0.
+            cmap (matplotlib colormap or None): colormap to use. If None, use
+                the default in rcParams['default_cmap'].
+            verbose (bool): whether to print some info or not.
+        '''
 
         super(
             Boxfill, self).__init__(
@@ -918,7 +1134,13 @@ class Boxfill(PlotMethod):
 
 class Hatch(object):
     def __init__(self, hatch='.', alpha=0.7):
-        # choices: '.', '/', '//', '\\', '\\\\', '*', '-', '+', 'x', 'o', 'O'
+        '''Plotting method for hatching plots
+
+        Keyword Args:
+            hatch (str): style of hatching. Choices:
+            '.', '/', '//', '\\', '\\\\', '*', '-', '+', 'x', 'o', 'O'
+            alpha (float): transparent level, in range of [0, 1].
+        '''
         self.hatch = hatch
         self.alpha = alpha
         self.method = 'hatch'
@@ -926,6 +1148,12 @@ class Hatch(object):
 
 class Shading(object):
     def __init__(self, color='0.5', alpha=0.5):
+        '''Plotting method for shading plots
+
+        Keyword Args:
+            color (str or color tuple): color of shading.
+            alpha (float): transparent level, in range of [0, 1].
+        '''
 
         self.color = color
         self.alpha = alpha
@@ -944,12 +1172,18 @@ class Shading(object):
 
         c = [(r, g, b, 1), ]
 
-        #self.cmap = colors.LinearSegmentedColormap('shading', cdict, N=2)
         self.cmap = colors.ListedColormap(c)
 
 
 class GIS(object):
     def __init__(self, xpixels=2000, dpi=96, verbose=True):
+        '''Plotting method for GIS plots
+
+        Keyword Args:
+            xpixels (int): plot size.
+            dpi (int): dpi.
+            verbose (bool): whats this?
+        '''
         self.xpixels = xpixels
         self.dpi = dpi
         self.verbose = verbose
@@ -960,6 +1194,20 @@ class GIS(object):
 class Quiver(object):
     def __init__(self, step=1, reso=None, scale=None, keylength=None,
                  linewidth=0.0015, color='k', alpha=1.0):
+        '''Plotting method for quiver plots
+
+        Keyword Args:
+            step (int): sub-sample steps in both x- and  y- axes. U and V
+                data are sub-sampled using U[::step,::step].
+            reso (int or None): if not None, regrid input U and V data to a
+                lower resolution, measured in grids.
+                If both < reso > and <step> are given, use <reso>.
+            scale (float or None): see same arg as matplotlib.pyplot.quiver().
+            keylength (float or None): see same arg as matplotlib.pylot.quiver().
+            linewidth (float): line width.
+            color (str or color tuple): color to plot quiver arrows.
+            alpha (float): transparent level in [0, 1].
+        '''
 
         self.method = 'quiver'
         self.step = step
@@ -982,6 +1230,56 @@ class Plot2D(object):
                  title=None, label_axes=True, axes_grid=False, legend='global',
                  legend_ori='horizontal', clean=False, fontsize=12,
                  fill_color='0.8'):
+        '''2D plotting class
+
+        Args:
+            var (ndarray): input data to plot. Determines what to plot.
+                Mush have dimensions >= 2.
+                For data with rank>2, take the slab from the last 2 dimensions.
+            method (PlotMethod): plotting method. Determines how to plot.
+                Could be Isofill, Isoline, Boxfill, Quiver, Shading, Hatch, GIS.
+        Keyword Args:
+            ax (matplotlib axis or None): axis obj. Determines where to plot.
+                If None, create a new.
+            xarray (1darray or None): array to use as the x-coordinates. If None,
+                use the indices of the last dimension: np.arange(slab.shape[-1]).
+            yarray (1darray or None): array to use as the y-coordinates. If None,
+                use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
+            title (str or None): text as the figure title if <ax> is the
+                single plot in the figure. If None, automatically
+                get an alphabetic subtitle if <ax> is a subplot, e.g. '(a)'
+                for the 1st subplot, '(d)' for the 4th one. If str and <ax>
+                is a subplot, prepend <title> with the alphabetic index.
+            label_axes (bool or 'all' or ((left_y, right_y, top_y, top_y),
+                (left_x, right_x, top_x, top_x)) or None): controls axis ticks and
+                ticklabels. If True, don't exert any inference other than
+                changing the ticklabel fontsize, and let matplotlib put the
+                ticks and ticklabels (i.e. default only left and bottom axes).
+                If False, turn off all ticks and ticklabels.
+                If 'all', plot ticks and ticks labels on all 4 sides.
+                If ((left_y, right_y, top_y, top_y), (left_x, right_x, top_x, top_x)),
+                specify which side to plot ticks/ticklabels. Each swith is a
+                bool or binary. If None, will set the ticks/ticklabels such
+                that the interior subplots have no ticks/ticklabels, edge
+                subplots have ticks/ticklabels on the outer edges, i.e. similar
+                as the 'sharex', 'sharey' options. Location of the subplot
+                is determined from return of `ax.get_geometry()`.
+            axes_grid (bool): whether to add axis grid lines.
+            legend (str or None): controls whether to share colorbar or not.
+                A colorbar is only plotted for Isofill/Isoline plots.
+                If None, don't put colorbar. If 'local', <ax> has its own
+                colorbar. If 'global', all subplots in the figure share a
+                single colorbar, which is created by the 1st subplot in the
+                figure, which is determined from the return of `ax.get_geometry()`.
+            legend_ori (str): orientation of colorbar. 'horizontal' or 'vertical'.
+            clean (bool): if False, don't plot axis ticks/ticklabels, colorbar,
+                axis grid lines or title.
+            fontsize (int): font size for ticklabels, title, axis labels, colorbar
+                ticklabels.
+            fill_color (str or color tuple): color to use as background color.
+                If data have missings, they will be shown as this color.
+                It is better to use a grey than while to better distinguish missings.
+        '''
 
         self.var = var
         self.method = method
@@ -1007,12 +1305,19 @@ class Plot2D(object):
         self.xarray, self.yarray, self.lons, self.lats = self.getGrid()
 
         # ---------------Get geo and fontsize---------------
-        # TODO: overwrite input fontsize or not?
         self.geo, self.subidx, self._fontsize = self.getGeo()
 
     # ---------------------Get grid---------------------
 
     def getGrid(self):
+        '''Get x- and y- coordnates
+
+        Returns:
+            xarray (1darray): 1d array of the x-coordinates.
+            yarray (1darray): 1d array of the y-coordinates.
+            lons,lats (ndarray): 2d array of the x- and y- coordinates, as
+                created from `lons, lats = np.meshgrid(xarray, yarray)`.
+        '''
 
         if self.yarray is None:
             yarray = np.arange(self.var.shape[0])
@@ -1034,6 +1339,16 @@ class Plot2D(object):
         return xarray, yarray, lons, lats
 
     def getGeo(self):
+        '''Get geometry layout of the axis and font size
+
+        Returns:
+            geo (nrows, ncols): subplot layout of the figure.
+            subidx (int): index of the axis obj in the (nrows, ncols) layout.
+                i.e. 1 for the 1st subplot.
+            fontsize (int): default font size. This is determined from an
+                empirical formula that scales down the default font size
+                for a bigger grid layout.
+        '''
 
         geo = self.ax.get_geometry()[:2]
         subidx = self.ax.get_geometry()[-1]
@@ -1044,6 +1359,12 @@ class Plot2D(object):
 
     @classmethod
     def getExtend(cls, method):
+        '''Get colorbar overflow on both ends
+
+        Returns:
+            extend (str): 'both', 'min', 'max' or 'neither'. Determined
+                from the method obj.
+        '''
 
         if method.ext_1 is False and method.ext_2 is False:
             extend = 'neither'
@@ -1057,6 +1378,16 @@ class Plot2D(object):
         return extend
 
     def plot(self):
+        '''Main plotting interface
+
+        Calls the core plotting function self._plot(), which handles the
+        2D plotting depending on the plotting method.
+        Then plots axes, colorbar and title.
+
+        Returns:
+            self.cs (mappable): the mappable obj, e.g. return value from contour()
+                or contourf().
+        '''
 
         self.cs = self._plot()
         self.plotAxes()
@@ -1066,6 +1397,11 @@ class Plot2D(object):
         return self.cs
 
     def _plot(self):
+        '''Core plotting function
+
+        Create the plot depending on method: isofill, isoline, boxfill, pcolor,
+        hatch, or shading.
+        '''
 
         # make masked value grey, otherwise they will be white
         self.ax.patch.set_color(self.fill_color)
@@ -1096,6 +1432,7 @@ class Plot2D(object):
         return cs
 
     def _plotIsofill(self):
+        '''Core plotting function, isofill/contourf'''
 
         extend = Plot2D.getExtend(self.method)
 
@@ -1114,9 +1451,11 @@ class Plot2D(object):
                 transform=self._transform
             )
             self.css = css
+
         return cs
 
     def _plotIsoline(self):
+        '''Core plotting function, isoline/contour'''
 
         extend = Plot2D.getExtend(self.method)
 
@@ -1172,6 +1511,7 @@ class Plot2D(object):
         return cs
 
     def _plotBoxfill(self):
+        '''Core plotting function, boxfill/imshow'''
 
         cs = self.ax.imshow(
             self.var, cmap=self.method.cmap, origin='lower',
@@ -1186,6 +1526,7 @@ class Plot2D(object):
         return cs
 
     def _plotPcolor(self):
+        '''Core plotting function, pcolormesh'''
 
         cs = self.ax.pcolormesh(
             self.lons, self.lats, self.var, cmap=self.method.cmap,
@@ -1195,6 +1536,9 @@ class Plot2D(object):
         return cs
 
     def _plotHatch(self):
+        '''Core plotting function, pattern hatching'''
+
+        # nlevel=3 necessary?
         if np.all(self.var == 0):
             nlevel = 1
         else:
@@ -1205,9 +1549,11 @@ class Plot2D(object):
             self.var, nlevel, colors='none',
             hatches=[None, self.method.hatch],
             alpha=0.)
+
         return cs
 
     def _plotShading(self):
+        '''Core plotting function, color shading'''
 
         pvar = np.where(self.var == 1, 1, np.nan)
         cs = self.ax.contourf(
@@ -1220,7 +1566,18 @@ class Plot2D(object):
         return cs
 
     def getLabelBool(self, geo, idx):
-        '''[left, right, top, bottom]'''
+        '''Decide whether to plot axis ticks and ticklabels on the 4 sides.
+
+        Args:
+            geo (nrows, ncols): subplot layout of the figure.
+            idx (int): index of the axis obj in the (nrows, ncols) layout.
+                i.e. 1 for the 1st subplot.
+        Returns:
+            parallels (list): boolean flag for the x-axis ticks/labels on 4 sides:
+                [left, right, top, bottom]
+            meridians (list): boolean flag for the y-axis ticks/labels on 4 sides:
+                [left, right, top, bottom]
+        '''
 
         if geo[0]*geo[1] == 1:
             parallels = [1, 1, 0, 0]
@@ -1243,32 +1600,38 @@ class Plot2D(object):
             elif ridx == geo[0]-1:
                 meridians[3] = 1
 
-        # if self.legend == 'local' and self.legend_ori == 'vertical' and parallels[1] == 1:
-            #parallels[1] = 0
-
         return parallels, meridians
 
     def plotAxes(self):
+        '''Plot axes ticks and ticklabels'''
 
         if self.axes_grid:
             self.ax.grid(True)
 
-        if self.label_axes is False:
+        if self.label_axes is True:
+            self.ax.tick_params(axis='both', which='major',
+                                labelsize=self._fontsize)
             return
 
         # --------Turn off lat/lon labels if required--------
-        if self.clean:
-            self.ax.xaxis.set_ticklabels([])
-            self.ax.yaxis.set_ticklabels([])
+        if self.clean or not self.label_axes:
+            self.ax.tick_params(left=False, labelleft=False, right=False,
+                    labelright=False, top=False, labeltop=False,
+                    bottom=False, labelbottom=False)
             return
 
         if self.label_axes == 'all':
             parallels = [1, 1, 0, 0]
             meridians = [0, 0, 1, 1]
-        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 2 and\
-                len(self.label_axes[0]) == 4 and len(self.label_axes[1]) == 4:
-            # TODO: add docstring for this
-            parallels, meridians = self.label_axes
+        elif isinstance(self.label_axes, (list, tuple)) and len(self.label_axes) == 4:
+            parallels = [0,]*4
+            meridians = [0,]*4
+            for ii in [0, 1]:
+                if self.label_axes[ii]:
+                    parallels[ii] = 1
+            for ii in [2, 3]:
+                if self.label_axes[ii]:
+                    meridians[ii] = 1
         else:
             parallels, meridians = self.getLabelBool(self.geo, self.subidx)
 
@@ -1313,11 +1676,24 @@ class Plot2D(object):
         self.ax.tick_params(axis='both', which='major',
                             labelsize=self._fontsize,
                             labelleft=labelleft, labelright=labelright,
-                            labeltop=labeltop, labelbottom=labelbottom)
+                            labeltop=labeltop, labelbottom=labelbottom,
+                            left=labelleft, right=labelright,
+                            top=labeltop, bottom=labelbottom)
 
         return
 
     def alternateTicks(self, cbar, ticks):
+        '''Create alternating ticks and ticklabels for colorbar
+
+        Args:
+            cbar (matplotlib colorbar obj): input colorbar obj to alter.
+            ticks (list or array): ticks of the colorbar.
+        Returns:
+            cbar (matplotlib colorbar obj): the altered colorbar.
+
+        Only works for horizontal colorbar with discrete ticks. As vertical
+        colorbar doesn't tend to have overlapping tick labels issue.
+        '''
 
         if self.legend_ori == 'vertical':
             cbar.set_ticks(ticks)
@@ -1414,187 +1790,9 @@ class Plot2D(object):
 
         return cbar
 
-    def plotColorbarold(self):
-
-        if self.method.method in ['hatch', 'shading']:
-            return
-
-        if self.legend is None:
-            return
-
-        if self.method.method in ['isofill', 'isoline']:
-            if len(self.cs.levels)<2:
-                return
-            isdrawedges = True
-        else:
-            isdrawedges = False
-
-        if self.method.method in ['boxfill', 'pcolor']:
-            extend = Plot2D.getExtend(self.method)
-
-        # TODO: optimization needed here!
-
-        # ---------------Draw local colorbar---------------
-        if self.legend == 'local' or (
-                self.legend == 'global' and self.geo[0] * self.geo[1] == 1):
-
-            if self.method.method in ['boxfill', 'pcolor']:
-
-                # Adjust position according to the existence of axis ticks
-                pad = getColorbarPad(self.ax, self.legend_ori, base_pad=0.02)
-
-                # --------------Create a colorbar axis--------------
-                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
-                cax, kw = mcbar.make_axes_gridspec(
-                    self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
-                    fraction=0.07, aspect=35)
-                #cbar = plt.colorbar(
-                    #self.cs, cax=cax, orientation=self.legend_ori,
-                    #drawedges=isdrawedges, extend=extend)
-
-                #ticks = cbar.get_ticks()
-                ticks=None
-
-            elif self.method.method in ['isofill', 'isoline']:
-                # compute extra padding needed for the top side tick labels
-                if self.legend_ori == 'horizontal':
-                    dummytext = self.ax.text(
-                        0, 0, '0.0', zorder=-10, fontsize=self._fontsize,
-                        alpha=0, transform=self.ax.transAxes)
-                    dummybox = dummytext.get_window_extent(
-                        self.ax.get_figure().canvas.get_renderer())
-                    dummybox = dummybox.transformed(
-                        self.ax.transAxes.inverted())
-
-                    # Adjust position according to the existence of axis ticks
-                    pad = getColorbarPad(
-                        self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
-                else:
-
-                    pad = getColorbarPad(self.ax, self.legend_ori)
-
-                ticks = getattr(self.method, 'levels', None)
-                cax, kw = mcbar.make_axes_gridspec(
-                    self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
-                    fraction=0.07, aspect=35)
-                #cbar = plt.colorbar(
-                    #self.cs, cax=cax, orientation=self.legend_ori, ticks=ticks,
-                    #drawedges=isdrawedges)
-
-                #cbar = self.alternateTicks(cbar, ticks)
-
-            # -------------------Re-format ticks-------------------
-            #cbar.ax.tick_params(labelsize=self._fontsize)
-            #if all([ll == int(ll) for ll in ticks]):
-                #ticks = [int(ll) for ll in ticks]
-
-        # -----Use the 1st subplot as global color bar-----
-        elif self.legend == 'global' and self.subidx == 1:
-
-            fig = self.ax.get_figure()
-
-            if self.legend_ori == 'horizontal':
-
-                import matplotlib
-                __import__('pdb').set_trace()
-                subplots=list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
-
-                # constrained_layout
-                if fig.get_constrained_layout():
-                    if len(subplots)>1:
-                        cbar=fig.colorbar(self.cs, ax=fig.axes, orientation=self.legend_ori,
-                                pad=0,
-                                shrink=0.85, fraction=0.07)
-                        cax=cbar.ax
-                    else:
-                        dummytext = self.ax.text(
-                            0, 0, '0.0', zorder=-10, fontsize=self._fontsize, alpha=0,
-                            transform=self.ax.transAxes)
-                        dummybox = dummytext.get_window_extent(
-                            self.ax.get_figure().canvas.get_renderer())
-                        dummybox = dummybox.transformed(fig.transFigure.inverted())
-                        pad = dummybox.height*3.0
-                        height = 0.02
-                        fig.subplots_adjust(bottom=0.18)
-                        cax = self.ax.get_figure().add_axes(
-                            [0.175, 0.18-height-pad, 0.65, height])
-                        #__import__('pdb').set_trace()
-                        #fig.tight_layout(rect=[0, 0.14, 1, 1])
-                        #[0.15, 0.18-height, 0.6, height])
-                        #cax, kw=mcbar.make_axes_gridspec(self.ax.get_figure().axes,
-                                #orientation=self.legend_ori, shrink=0.85,
-                                #pad=0.01,
-                                #fraction=0.07, aspect=35)
-                else:
-                    if len(subplots)>1:
-                        cbar=fig.colorbar(self.cs, ax=fig.axes, orientation=self.legend_ori,
-                                pad=0,
-                                shrink=0.85, fraction=0.07)
-                        cax=cbar.ax
-                    else:
-                        dummytext = self.ax.text(
-                            0, 0, '0.0', zorder=-10, fontsize=self._fontsize, alpha=0,
-                            transform=self.ax.transAxes)
-                        dummybox = dummytext.get_window_extent(
-                            self.ax.get_figure().canvas.get_renderer())
-                        dummybox = dummybox.transformed(fig.transFigure.inverted())
-                        pad = dummybox.height*3.0
-                        height = 0.02
-                        fig.subplots_adjust(bottom=0.18)
-                        cax = self.ax.get_figure().add_axes(
-                            [0.175, 0.18-height-pad, 0.65, height])
-
-            else:
-                fig.subplots_adjust(right=0.90)
-                cax = self.ax.get_figure().add_axes([0.92, 0.20, 0.02, 0.6])
-
-            if self.method.method in ['boxfill', 'pcolor']:
-                cbar = plt.colorbar(
-                    self.cs, cax=cax, orientation=self.legend_ori, ticks=None,
-                    drawedges=isdrawedges, extend=extend, aspect=35)
-                ticks = cbar.get_ticks()
-            else:
-                ticks = getattr(self.method, 'levels', None)
-                cbar = plt.colorbar(
-                    self.cs, cax=cax, orientation=self.legend_ori, ticks=ticks,
-                    drawedges=isdrawedges, aspect=35)
-
-                cbar = self.alternateTicks(cbar, ticks)
-
-            # -----------------Re-format ticks-----------------
-            cbar.ax.tick_params(labelsize=self._fontsize)
-
-            #if all([ll == int(ll) for ll in ticks]):
-                #ticks = [int(ll) for ll in ticks]
-
-        elif self.legend == 'global' and self.subidx > 1:
-            return
-
-        # --------------------Plot unit--------------------
-        var_units = getattr(self.var, 'units', '')
-        if var_units:
-            # option1: plot colorbar units below
-            # self.cbar.set_label(var_units,fontsize=self._fontsize)
-
-            # option2: plot colorbar units to the right or below, depending on
-            # orientation
-            if self.legend_ori == 'horizontal':
-                cbar_ax = cbar.ax
-                cbar_ax.text(1.02, 0.5, var_units, fontsize=self._fontsize,
-                             transform=cbar_ax.transAxes,
-                             horizontalalignment='left',
-                             verticalalignment='center')
-            elif self.legend_ori == 'vertical':
-                cbar_ax = cbar.ax
-                cbar_ax.text(
-                    0.5, -0.05, var_units, fontsize=self._fontsize,
-                    transform=cbar_ax.transAxes,
-                    horizontalalignment='left', verticalalignment='top')
-
-        return cbar
-
 
     def plotColorbar(self):
+        '''Plot colorbar'''
 
         if self.method.method in ['hatch', 'shading']:
             return

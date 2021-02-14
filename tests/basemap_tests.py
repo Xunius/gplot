@@ -84,12 +84,43 @@ def test_basemap_axes_grid():
 
     return
 
+def test_basemap_label_axes_True():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Basemap label_axes=True', projection='cyl', label_axes=True)
+    figure.show()
+
+    return
+
 def test_basemap_label_axes_False():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
     ax=figure.add_subplot(111)
     iso=gplot.Isofill(var1)
     gplot.plot2(var1, iso, ax, title='Basemap label_axes=False', projection='cyl', label_axes=False)
+    figure.show()
+
+    return
+
+def test_basemap_label_axes_all():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Basemap label_axes="all"', projection='cyl', label_axes='all')
+    figure.show()
+
+    return
+
+def test_basemap_label_axes_specified():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Basemap label_axes=specified',
+            projection='cyl', label_axes=(0, 1, 1, 0))
     figure.show()
 
     return
@@ -379,13 +410,16 @@ if __name__=='__main__':
     test_basemap_isoline()
     test_basemap_boxfill()
     test_basemap_axes_grid()
+    '''
+    test_basemap_label_axes_True()
     test_basemap_label_axes_False()
+    test_basemap_label_axes_all()
+    test_basemap_label_axes_specified()
+    '''
     test_basemap_vertical_legend()
     test_basemap_shading()
     test_basemap_stroke()
     test_basemap_subplots()
-    '''
-    '''
     test_basemap_subplots_global_legend()
     test_basemap_subplots_global_legend2()
     test_basemap_subplots_global_legend3()
@@ -394,9 +428,7 @@ if __name__=='__main__':
     test_basemap_subplots_global_legend6()
     test_basemap_quiver()
     test_basemap_quiver2()
-    '''
     test_basemap_quiver3()
-    '''
     test_basemap_quiver_reso()
     test_basemap_quiver_scale()
     test_basemap_quiver_scale_keylength()

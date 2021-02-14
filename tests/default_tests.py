@@ -66,6 +66,47 @@ def test_plot2d_axes_grid():
 
     return
 
+def test_plot2d_label_axes_True():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Plot2D label_axes=True', label_axes=True)
+    figure.show()
+
+    return
+
+def test_plot2d_label_axes_False():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Plot2D label_axes=False', label_axes=False)
+    figure.show()
+
+    return
+
+def test_plot2d_label_axes_all():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Plot2D label_axes="all"', label_axes='all')
+    figure.show()
+
+    return
+
+def test_plot2d_label_axes_specified():
+
+    figure=plt.figure(figsize=(12,10),dpi=100)
+    ax=figure.add_subplot(111)
+    iso=gplot.Isofill(var1)
+    gplot.plot2(var1, iso, ax, title='Plot2D label_axes=specified',
+            label_axes=(0, 1, 1, 0))
+    figure.show()
+
+    return
+
 def test_plot2d_vertical_legend():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
@@ -260,7 +301,11 @@ if __name__=='__main__':
     test_plot2d_quiver()
     test_plot2d_quiver2()
     '''
-    test_plot2d_quiver3()
+    test_plot2d_label_axes_True()
+    test_plot2d_label_axes_False()
+    test_plot2d_label_axes_all()
+    test_plot2d_label_axes_specified()
+    #test_plot2d_quiver3()
     '''
     test_plot2d_quiver_step()
     test_plot2d_quiver_step2()
