@@ -21,6 +21,7 @@ Update time: 2021-02-13 10:06:58.
 from __future__ import print_function
 import re
 import copy
+import warnings
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -2010,6 +2011,7 @@ class Plot2Quiver(Plot2D):
         self.ax.patch.set_color(self.fill_color)
 
         if self.curve:
+            warnings.warn('\n#<gplot warning>: The curved quiver functionality is experimental.\n')
             grains=int((len(self.xarray)+len(self.yarray)))
             quiver = modplot.velovect(self.ax, self.lons, self.lats, self.var,
                     self.v, scale=15,

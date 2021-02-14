@@ -5,6 +5,7 @@ Update time: 2020-12-05 10:28:38.
 '''
 
 from __future__ import print_function
+import warnings
 import numpy as np
 from matplotlib import ticker
 import matplotlib.pyplot as plt
@@ -446,6 +447,7 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
 
         if self.curve:
             # modded from: https://stackoverflow.com/a/65607512/2005415
+            warnings.warn('\n#<gplot warning>: The curved quiver functionality is experimental.\n')
             norm = np.sqrt(self.var**2 + self.v**2)
             norm_flat = norm.flatten()
 

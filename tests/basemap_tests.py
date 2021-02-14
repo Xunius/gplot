@@ -312,7 +312,7 @@ def test_basemap_quiver3():
     ax=figure.add_subplot(111)
     q=gplot.Quiver(step=8)
     pquiver=Plot2QuiverBasemap(u, v, q, xarray=lons, yarray=lats,
-            ax=ax, title='default quiver', projection='cyl', curve=True)
+            ax=ax, title='curved quiver', projection='cyl', curve=True)
     pquiver.plot()
 
     figure.show()
@@ -410,12 +410,10 @@ if __name__=='__main__':
     test_basemap_isoline()
     test_basemap_boxfill()
     test_basemap_axes_grid()
-    '''
     test_basemap_label_axes_True()
     test_basemap_label_axes_False()
     test_basemap_label_axes_all()
     test_basemap_label_axes_specified()
-    '''
     test_basemap_vertical_legend()
     test_basemap_shading()
     test_basemap_stroke()
@@ -428,7 +426,9 @@ if __name__=='__main__':
     test_basemap_subplots_global_legend6()
     test_basemap_quiver()
     test_basemap_quiver2()
+    '''
     test_basemap_quiver3()
+    '''
     test_basemap_quiver_reso()
     test_basemap_quiver_scale()
     test_basemap_quiver_scale_keylength()

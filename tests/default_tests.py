@@ -181,7 +181,7 @@ def test_plot2d_quiver3():
     figure=plt.figure(figsize=(12,10),dpi=100)
     ax=figure.add_subplot(111)
     q=gplot.Quiver(step=8)
-    pquiver=gplot.Plot2Quiver(u, v, q, ax=ax, title='default quiver', curve=True)
+    pquiver=gplot.Plot2Quiver(u, v, q, ax=ax, title='curved quiver', curve=True)
     pquiver.plot()
 
     figure.show()
