@@ -7,7 +7,8 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-from gplot.lib import gplot
+#from gplot.lib import gplot
+import gplot
 from gplot.lib import netcdf4_utils
 from gplot.lib.cartopy_utils import Plot2QuiverCartopy
 

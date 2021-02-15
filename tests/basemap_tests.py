@@ -5,7 +5,8 @@ from __future__ import absolute_import
 import numpy as np
 import MV2 as MV
 import matplotlib.pyplot as plt
-from gplot.lib import gplot
+#from gplot.lib import gplot
+import gplot
 from gplot.lib import cdat_utils
 from gplot.lib.basemap_utils import Plot2Basemap, Plot2QuiverBasemap
 
@@ -249,14 +250,12 @@ def test_basemap_subplots_global_legend4():
 def test_basemap_subplots_global_legend5():
 
     figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=False)
-    #figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=False)
     plot_vars=[var1[ii] for ii in range(4)]
     iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
     titles=['var1-%d' %ii for ii in range(4)]
 
     for ii, vii in enumerate(plot_vars):
         ax=figure.add_subplot(2,2,ii+1)
-        #ax=axes.flat[ii]
         gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global',
                 legend_ori='vertical', projection='cyl')
 
@@ -266,14 +265,12 @@ def test_basemap_subplots_global_legend5():
 
 def test_basemap_subplots_global_legend6():
 
-    #figure=plt.figure(figsize=(12,10),dpi=100, constrained_layout=False)
     figure, axes=plt.subplots(figsize=(12,10), nrows=2, ncols=2, constrained_layout=True)
     plot_vars=[var1[ii] for ii in range(4)]
     iso1=gplot.Isofill(plot_vars, ql=0.005, qr=0.001)
     titles=['var1-%d' %ii for ii in range(4)]
 
     for ii, vii in enumerate(plot_vars):
-        #ax=figure.add_subplot(2,2,ii+1)
         ax=axes.flat[ii]
         gplot.plot2(vii, iso1, ax, title=titles[ii], legend='global',
                 legend_ori='vertical', projection='cyl')

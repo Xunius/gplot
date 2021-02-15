@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import MaxNLocator
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.basemap import addcyclic
-from gplot.lib.gplot import Plot2D, Plot2Quiver, rcParams
+from gplot.lib.base_utils import Plot2D, Plot2Quiver, rcParams
 
 
 class Plot2Basemap(Plot2D):

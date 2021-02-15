@@ -4,7 +4,8 @@ from __future__ import absolute_import
 # --------Import modules-------------------------
 import numpy as np
 import matplotlib.pyplot as plt
-from gplot.lib import gplot
+#from gplot.lib import gplot
+import gplot
 from gplot.lib.basemap_utils import Plot2Basemap, Plot2QuiverBasemap
 from gplot.lib import netcdf4_utils
 

@@ -6,6 +6,10 @@ Contains:
     * plotting wrapper classes, from which equivalent geographical plotting
       classes are inherited.
 
+Memebers in this module are available under the `gplot` namespace:
+
+    `gplot.xxx`
+
 Author: guangzhi XU (xugzhi1987@gmail.com)
 Update time: 2021-02-13 10:06:58.
 '''
@@ -35,6 +39,7 @@ from matplotlib import colors
 from gplot.lib import modplot
 
 __all__=[
+        'rcParams',
         'restoreParams', 'mkscale', 'index2Letter', 'remappedColorMap2',
         'getColormap', 'getColorbarPad', 'pickPoint', 'getSlab', 'regridToReso',
         'getMissingMask', 'getQuantiles', 'getRange', 'plot2',

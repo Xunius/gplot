@@ -8,7 +8,7 @@ from __future__ import print_function
 import numpy as np
 import cartopy.crs as ccrs
 from cartopy.util import add_cyclic_point
-from gplot.lib.gplot import Plot2D, Plot2Quiver
+from gplot.lib.base_utils import Plot2D, Plot2Quiver
 
 
 class Plot2Cartopy(Plot2D):
