@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import numpy as np
 import matplotlib.pyplot as plt
 from gplot.lib import gplot
-from gplot.lib import cdat_utils
+from gplot.lib import netcdf4_utils
 
 SAVE=False
 
@@ -276,19 +276,21 @@ def test_plot2d_quiver_overlay2():
 
 if __name__=='__main__':
 
-    var1=cdat_utils.readData('msl')
-    var2=cdat_utils.readData('sst')
-    u=cdat_utils.readData('u')
-    v=cdat_utils.readData('v')
+    var1 = netcdf4_utils.readData('msl')
+    var2 = netcdf4_utils.readData('sst')
+    u = netcdf4_utils.readData('u')
+    v = netcdf4_utils.readData('v')
+    lats = netcdf4_utils.readData('latitude')
+    lons = netcdf4_utils.readData('longitude')
 
     # remove metadata
     var1=np.array(var1)
     var2=np.where(var2.mask, np.nan, var2)
     u=np.array(u)
     v=np.array(v)
+    gplot.rcParams['nc_interface']='netcdf4'
 
     #----------------------Tests----------------------
-    '''
     test_plot2d_default()
     test_plot2d_isofill_overflow()
     test_plot2d_isofill_split()
@@ -310,6 +312,5 @@ if __name__=='__main__':
     test_plot2d_quiver_reso()
     test_plot2d_quiver_scale()
     test_plot2d_quiver_scale_keylength()
-    '''
     test_plot2d_quiver_overlay()
     test_plot2d_quiver_overlay2()

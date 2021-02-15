@@ -397,7 +397,6 @@ if __name__=='__main__':
     _, u, lons, lats=cdat_utils.checkGeomap(u, None, None)
 
     #----------------------Tests----------------------
-    '''
     gplot.rcParams['fontsize']=4
 
     test_basemap_default()
@@ -424,14 +423,11 @@ if __name__=='__main__':
     test_basemap_subplots_global_legend4()
     test_basemap_subplots_global_legend5()
     test_basemap_subplots_global_legend6()
-    '''
-    '''
     test_basemap_quiver()
     test_basemap_quiver2()
     test_basemap_quiver3()
     test_basemap_quiver_reso()
     test_basemap_quiver_scale()
     test_basemap_quiver_scale_keylength()
-    '''
     test_basemap_quiver_overlay()
     test_basemap_quiver_overlay2()

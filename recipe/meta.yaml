@@ -1,4 +1,4 @@
-{% set version = "0.1a" %}
+{% set version = "0.2a" %}
 
 package:
     name: gplot

@@ -5,7 +5,7 @@
 from setuptools import find_packages, setup
 
 setup(name='gplot',
-        version='0.1a',
+        version='0.2a',
         description='Gplot is a thin wrapper of `matplotlib`, `basemap` and `cartopy` for the creation of quick and easy geographical plots.',
         author='Guangzhi XU',
         author_email='xugzhi1987@gmail.com',
