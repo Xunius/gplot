@@ -19,7 +19,7 @@ requirements:
         - numpy
         - scipy
         - netcdf4
-        - matplotlib<=3.2.2
+        - matplotlib <=3.2.2
 about:
     home: https://github.com/Xunius/gplot
     lciense: GPL-3.0
