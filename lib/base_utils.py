@@ -26,7 +26,7 @@ Update time: 2021-02-13 10:06:58.
 # --------Import modules--------------
 from __future__ import print_function
 import re
-import copy
+#import copy
 import warnings
 import numpy as np
 import matplotlib
@@ -67,7 +67,27 @@ rcParams = {
     'default_cmap': plt.cm.RdBu_r
 }
 
-_default_rcParams = copy.deepcopy(rcParams)
+# a backup copy, deepcopy produces issue in autodoc
+_default_rcParams = {
+    'legend': 'global',
+    'title': None,
+    'label_axes': True,
+    'axes_grid': False,
+    'fill_color': '0.8',
+    'projection': 'cyl',
+    'legend_ori': 'horizontal',
+    'clean': False,
+    'bmap': None,
+    'isgeomap': True,
+    'fix_aspect': False,
+    'nc_interface': 'cdat',
+    'geo_interface': 'basemap',
+    'fontsize': 11,
+    'verbose': True,
+    'default_cmap': plt.cm.RdBu_r
+}
+
+#_default_rcParams = copy.deepcopy(rcParams)
 
 # -----------------------------------------------------------------------
 # -                          Utility functions                          -
