@@ -833,6 +833,7 @@ class TwoSlopeNorm(Normalize):
 
 
 class PlotMethod(object):
+    '''Base plotting method class'''
     def __init__(self, vars, split=2, min_level=None, max_level=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
         '''Base plotting method class
@@ -953,6 +954,7 @@ class PlotMethod(object):
 
 
 class Isofill(PlotMethod):
+    '''Plotting method for isofill/contourf plots'''
     def __init__(self, vars, num=15, zero=1, split=1, levels=None,
                  min_level=None, max_level=None, ql=None, qr=None,
                  vcenter=0, cmap=None,
@@ -1045,6 +1047,7 @@ class Isofill(PlotMethod):
 
 
 class Isoline(Isofill):
+    '''Plotting method for isoline/contour plots'''
     def __init__(self, vars, num=15, zero=1, split=1, levels=None,
                  min_level=None, max_level=None, ql=None, qr=None,
                  vcenter=0, cmap=None,
@@ -1120,6 +1123,7 @@ class Isoline(Isofill):
 
 
 class Boxfill(PlotMethod):
+    '''Plotting method for boxfill/imshow plots'''
     def __init__(self, vars, split=2, min_level=None, max_level=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
         '''Plotting method for boxfill/imshow plots
@@ -1176,6 +1180,7 @@ class Boxfill(PlotMethod):
 
 
 class Hatch(object):
+    '''Plotting method for hatching plots'''
     def __init__(self, hatch='.', alpha=0.7):
         '''Plotting method for hatching plots
 
@@ -1190,6 +1195,7 @@ class Hatch(object):
 
 
 class Shading(object):
+    '''Plotting method for shading plots'''
     def __init__(self, color='0.5', alpha=0.5):
         '''Plotting method for shading plots
 
@@ -1219,6 +1225,7 @@ class Shading(object):
 
 
 class GIS(object):
+    '''Plotting method for GIS plots'''
     def __init__(self, xpixels=2000, dpi=96, verbose=True):
         '''Plotting method for GIS plots
 
@@ -1235,6 +1242,7 @@ class GIS(object):
 
 
 class Quiver(object):
+    '''Plotting method for quiver plots'''
     def __init__(self, step=1, reso=None, scale=None, keylength=None,
                  linewidth=0.0015, color='k', alpha=1.0):
         '''Plotting method for quiver plots
@@ -1269,13 +1277,17 @@ class Quiver(object):
 
 
 class Plot2D(object):
+    '''Base 2D plotting class
+
+    For geographical plots, see Plot2Basemap or Plot2Cartopy,
+    which handles equivalent plotting with geographical map projections.
+    '''
 
     def __init__(self, var, method, ax=None, xarray=None, yarray=None,
                  title=None, label_axes=True, axes_grid=False, legend='global',
                  legend_ori='horizontal', clean=False, fontsize=None,
                  fill_color=None):
-        '''2D plotting class
-
+        '''
         Args:
             var (ndarray): input data to plot. Determines what to plot.
                 Mush have dimensions >= 2.
