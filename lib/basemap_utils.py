@@ -16,6 +16,7 @@ from gplot.lib.base_utils import Plot2D, Plot2Quiver, rcParams
 
 
 class Plot2Basemap(Plot2D):
+    '''2D geographical plotting class, using basemap'''
     def __init__(self, var, method, xarray, yarray, ax=None, title=None,
                  label_axes=True, axes_grid=False, legend=None, legend_ori=None,
                  clean=False, fontsize=None, projection=None, fill_color=None,
@@ -501,6 +502,7 @@ class Plot2Basemap(Plot2D):
 
 
 class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
+    '''2D geographical quiver plotting class, using basemap'''
 
     def __init__(
             self, u, v, method, xarray, yarray, ax=None,
