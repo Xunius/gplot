@@ -19,7 +19,6 @@ Update time: 2021-02-13 10:06:58.
 # TODO make it possible to use colormap to decode quiver magnitude, instead of
 # arrow length
 
-
 # --------Import modules--------------
 from __future__ import print_function
 import re
@@ -34,6 +33,14 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colorbar as mcbar
 from matplotlib import colors
 from gplot.lib import modplot
+
+__all__=[
+        'restoreParams', 'mkscale', 'index2Letter', 'remappedColorMap2',
+        'getColormap', 'getColorbarPad', 'pickPoint', 'getSlab', 'regridToReso',
+        'getMissingMask', 'getQuantiles', 'getRange', 'plot2',
+        'Isofill', 'Isoline', 'Boxfill', 'Hatch', 'Shading', 'GIS', 'Quiver',
+        'Plot2D', 'Plot2Quiver'
+        ]
 
 # Default parameters
 rcParams = {
