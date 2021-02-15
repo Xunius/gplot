@@ -10,9 +10,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../lib'))
 
 
 # -- Project information -----------------------------------------------------
@@ -22,7 +24,7 @@ copyright = '2021, Guangzhi XU'
 author = 'Guangzhi XU'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.1a'
+release = 'v0.2a'
 
 
 # -- General configuration ---------------------------------------------------
@@ -53,3 +55,12 @@ html_theme = 'default'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+numfig = True
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+napoleon_use_rtype = False
+napoleon_include_init_with_doc = True
+
+autodoc_mock_imports = ['numpy', 'scipy', 'netCDF4', 'matplotlib',
+        'mpl_toolkits', 'cdms2', 'MV2', 'cartopy']

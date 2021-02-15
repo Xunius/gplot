@@ -60,9 +60,10 @@ Dependencies
 Quick start
 ###########
 
-After installation of `gplot` and `basemap`, create a
-isofill/contourf plot of the global sea level pressure field (included in the
-installation) using the following snippet:
+After installation of `gplot` and `basemap`, create a isofill/contourf plot of
+the global sea level pressure field (sample data included in the installation)
+using the following snippet:
+
 ::
 
     import matplotlib.pyplot as plt
@@ -97,7 +98,7 @@ Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Topics:
 
     Basic workflow <basic>
     Isofill/Contourf plots <isofill>
@@ -114,6 +115,12 @@ gplot module contents
 
 .. toctree::
    :maxdepth: 1
+
+   base_utils.py <base_utils>
+   basemap_utils.py <basemap_utils>
+   cdat_utils.py <cdat_utils>
+   netcdf4_utils.py <netcdf4_utils>
+   cartopy_utils.py <cartopy_utils>
 
 
 
