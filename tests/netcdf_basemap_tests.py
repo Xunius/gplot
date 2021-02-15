@@ -278,7 +278,7 @@ def test_basemap_quiver_overlay():
                 nc_interface='netcdf4')
 
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, clean=True,
+        u, v, q, xarray=lons, yarray=lats, ax=ax,
         title='quiver overlay', projection='cyl')
     pquiver.plot()
     figure.show()
