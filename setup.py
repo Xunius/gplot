@@ -28,7 +28,7 @@ setup(name='gplot',
             "netcdf4",
             "matplotlib",
         ],
-        packages=find_packages(include=['gplot', 'gplot.*']),
+        packages=find_packages(include=['lib', 'lib.*']),
         package_data={'tests': ['*']},
         license='GPL-3.0-or-later'
         )
