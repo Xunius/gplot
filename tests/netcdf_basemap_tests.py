@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 # --------Import modules-------------------------
 import numpy as np
-import MV2 as MV
 import matplotlib.pyplot as plt
 from gplot.lib import gplot
 from gplot.lib.basemap_utils import Plot2Basemap, Plot2QuiverBasemap
@@ -140,7 +139,7 @@ def test_basemap_shading():
 
     shading = gplot.Shading(color='g', alpha=0.5)
     thres = np.percentile(var1, 80)
-    gplot.plot2(MV.where(var1 >= thres, 1, np.nan),
+    gplot.plot2(np.where(var1 >= thres, 1, np.nan),
                 shading, ax, xarray=lons, yarray=lats, projection='cyl',
                 bmap=g1.bmap, clean=True, nc_interface='netcdf4')
 

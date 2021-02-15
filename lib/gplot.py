@@ -1664,7 +1664,7 @@ class Plot2D(object):
                     meridians[ii] = 1
         else:
             parallels, meridians = self.getLabelBoolForShareXY(
-                    self.ax._gplot_geo, self.subidx)
+                    self.ax._gplot_geo[:-1], self.subidx)
 
         return parallels, meridians
 
