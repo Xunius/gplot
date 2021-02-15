@@ -65,7 +65,7 @@ isofill/contourf plot of the global sea level pressure field (included in the
 installation) using the following snippet:
 ::
 
-    import matplotlib as plt
+    import matplotlib.pyplot as plt
     import gplot
     from gplot.lib import netcdf4_utils
 
