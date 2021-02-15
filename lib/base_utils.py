@@ -699,7 +699,7 @@ def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
 
     Args:
         vars (list): a list of ndarrays.
-    Keyword Arg:
+    Keyword Args:
         min_level (None or float): given minimum level.
         max_level (None or float): given maximum level.
         ql (None or float): given left quantile.
