@@ -25,9 +25,11 @@ setup(name='gplot',
         install_requires=[
             "numpy",
             "scipy",
+            "netcdf4",
             "matplotlib",
         ],
         packages=find_packages(include=['gplot', 'gplot.*']),
+        package_data={'tests': ['*']},
         license='GPL-3.0-or-later'
         )
 

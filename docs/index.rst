@@ -13,7 +13,8 @@ Welcome to Gplot's documentation!
 Introduction
 ############
 
-*Gplot* is a thin wrapper of `matplotlib`, `basemap` and `cartopy` for creation of quick and easy geographical plots.
+*Gplot* is a thin wrapper of `matplotlib`, `basemap` and `cartopy` for
+quick and easy creations of geographical plots.
 
 
 Installation
@@ -33,12 +34,12 @@ will install ``gplot`` and its dependencies for Python 3.
 Dependencies
 ############
 
-* Mandentory:
+* Mandatory:
 
         * OS: Linux or MacOS. Windows is not tested.
         * Python: >= 3.
         * numpy
-        * matplotlib: developed in 3.2.2. **NOTE** that versions later than 3.2.2 are imcompatible with basemap.
+        * matplotlib: developed in 3.2.2. **NOTE** that versions later than 3.2.2 are incompatible with basemap.
 
 * Optional:
 
@@ -51,7 +52,7 @@ Dependencies
 
         * For netCDF file reading: netCDF4 or CDAT or xarray or iris.
 
-                * netCDF4: developed in 1.5.5.1.
+                * netCDF4: included as dependencies, developed in 1.5.5.1.
                 * cdms module of CDAT: developed in 3.1.5.
                 * xarray: not implemented yet.
                 * iris: not implemented yet.
@@ -59,8 +60,29 @@ Dependencies
 Quick start
 ###########
 
+After installation of `gplot` and `basemap`, create a
+isofill/contourf plot of the global sea level pressure field (included in the
+installation) using the following snippet:
+::
 
-More Detailed Documentation
+    import matplotlib as plt
+    import gplot
+    from gplot.lib import netcdf4_utils
+
+    var = netcdf4_utils.readData('msl')
+    lats = netcdf4_utils.readData('latitude')
+    lons = netcdf4_utils.readData('longitude')
+
+    figure = plt.figure(figsize=(12, 10), dpi=100)
+    ax = figure.add_subplot(111)
+    iso = gplot.Isofill(var)
+    gplot.plot2(var, iso, ax, xarray=lons, yarray=lats,
+                title='Default basemap', projection='cyl',
+                nc_interface='netcdf4')
+    figure.show()
+
+
+Documentation
 ###########################
 
 
@@ -68,6 +90,7 @@ More Detailed Documentation
    :maxdepth: 2
    :caption: Contents:
 
+    Basic workflow <basic>
     Isofill/Contourf plots <isofill>
     Isoline/Contour plots <isoline>
     Boxfill/imshow plots <boxfill>
