@@ -81,6 +81,15 @@ installation) using the following snippet:
                 nc_interface='netcdf4')
     figure.show()
 
+The output is given below:
+
+.. figure:: default_contourf.png
+   :width: 600px
+   :align: center
+   :figclass: align-center
+
+   Default contourf plot of global surface pressure field (in Pa), from ERA-I.
+
 
 Documentation
 ###########################
