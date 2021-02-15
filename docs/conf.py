@@ -63,4 +63,4 @@ napoleon_use_rtype = False
 napoleon_include_init_with_doc = True
 
 autodoc_mock_imports = ['numpy', 'scipy', 'netCDF4', 'matplotlib',
-        'mpl_toolkits', 'cdms2', 'MV2', 'cartopy', 'gplot']
+        'mpl_toolkits', 'cdms2', 'MV2', 'cartopy', 'gplot', 'copy']
