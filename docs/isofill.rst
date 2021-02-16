@@ -7,7 +7,7 @@ Create isofill/contourf plots
 The ``Isofill`` class
 ##############################
 
-To create a isofill/contourf plot, one creates an :py:class:`base_utils.Isofill`
+To create a isofill/contourf plot, one creates a :py:class:`base_utils.Isofill`
 object as the plotting method, and passes it to the :py:class:`base_utils.Plot2D`
 constructor or the :py:func:`base_utils.plot2` function.
 
@@ -120,6 +120,18 @@ Manual contour levels are simply specified by the `levels` optional argument:
 This will override the effects from all the arguments listed in the above section,
 except that overflows will still be added, if your specified levels do not cover
 the entire data range.
+
+
+Choose the colormap
+####################
+
+
+The colormap is specified using the ``cmap`` argument, which is default to
+a blue-white-red divergent colormap ``plt.cm.RdBu_r``.
+
+To use a different colormap, can provide with a different one from the *matplotlib*
+colormap collection, e.g. ``cmap = plt.cm.rainbow``. It is possible to provide
+only the name of the colormap as a string: ``cmap = 'rainbow'``.
 
 
 Split the colormap colors
