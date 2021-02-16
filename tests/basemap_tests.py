@@ -189,6 +189,21 @@ def test_basemap_stroke():
 
     return
 
+def test_basemap_stroke_comparison():
+
+    figure, (ax1, ax2) = plt.subplots(figsize=(12, 5), nrows=1, ncols=2,
+            constrained_layout=True)
+
+    iso1 = gplot.Isofill(var1)
+    gplot.plot2(var1, iso1, ax1, title='Basemap isofill without stroke',
+                projection='cyl')
+
+    iso2 = gplot.Isofill(var1, stroke=True)
+    gplot.plot2(var1, iso2, ax2, title='Basemap isofill with stroke',
+                projection='cyl')
+    figure.show()
+
+    return
 
 def test_basemap_subplots():
 
@@ -477,6 +492,7 @@ if __name__ == '__main__':
     test_basemap_vertical_legend()
     test_basemap_shading()
     test_basemap_stroke()
+    test_basemap_stroke_comparison()
     test_basemap_subplots()
     test_basemap_subplots_global_legend()
     test_basemap_subplots_global_legend2()

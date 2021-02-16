@@ -47,6 +47,35 @@ def test_plot2d_isofill_split():
 
     return
 
+def test_plot2d_isofill_split_comparison():
+
+    var2ano=var2-280.
+
+    figure, axes = plt.subplots(figsize=(12, 10), nrows=2, ncols=2,
+            constrained_layout=True)
+
+    iso1=gplot.Isofill(var2ano, num=11, zero=1, split=0)
+    gplot.plot2(var2ano, iso1, axes.flat[0], legend='local',
+            title='negatives and positives, split=0')
+
+    iso2=gplot.Isofill(var2ano, num=11, zero=1, split=1)
+    gplot.plot2(var2ano, iso2, axes.flat[1], legend='local',
+            title='negatives and positives, split=1')
+
+    iso3=gplot.Isofill(var2ano, num=11, zero=1, split=2)
+
+    gplot.plot2(var2ano, iso3, axes.flat[2], legend='local',
+            title='negatives and positives, split=2')
+
+    iso4=gplot.Isofill(var2, num=11, zero=1, split=2)
+    gplot.plot2(var2, iso4, axes.flat[3], legend='local',
+            title='all positive, split=2')
+
+    figure.show()
+    figure.tight_layout()
+
+    return
+
 def test_plot2d_boxfill():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
@@ -315,3 +344,5 @@ if __name__=='__main__':
     test_plot2d_quiver_scale_keylength()
     test_plot2d_quiver_overlay()
     test_plot2d_quiver_overlay2()
+    test_plot2d_isofill_split_comparison()
+

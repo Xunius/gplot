@@ -118,7 +118,7 @@ can use:
     gplot.plot2(var, iso, ax, xarray=lons, yarray=lats)
     figure.show()
 
-And the 2nd example can achieved using:
+And the 2nd example can be achieved using:
 
 ::
 

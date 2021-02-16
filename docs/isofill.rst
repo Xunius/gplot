@@ -117,14 +117,141 @@ Manual contour levels are simply specified by the `levels` optional argument:
   iso = Isofill(var, 10, levels=np.arange(-10, 12, 2))
 
 
-This will override effects from all the arguments listed in the above section.
+This will override the effects from all the arguments listed in the above section,
+except that overflows will still be added, if your specified levels do not cover
+the entire data range.
 
 
-Split colorbar colors
+Split the colormap colors
 ##############################
+
+**Divergent colormaps** are commonly used in academic works. E.g. the
+``plt.cm.RdBu_r`` colormap is one divergent colormap, with a transition from
+dark blue (the minimum) to white in the middle, and finally to dark red (the
+maximum) on the right.
+
+The middle color (white in this case) usually corresponds to critical
+transition in the data (e.g. going from negative to positive), therefore it is
+crucial to make sure they are aligned up. See an example:
+
+::
+
+    import matplotlib.pyplot as plt
+    import gplot
+    from gplot.lib import netcdf4_utils
+
+    # read in SST data
+    var2 = netcdf4_utils.readData('sst')
+    lats = netcdf4_utils.readData('latitude')
+    lons = netcdf4_utils.readData('longitude')
+
+    var2ano=var2-280.  # create some negative values
+
+    figure, axes = plt.subplots(figsize=(12, 10), nrows=2, ncols=2,
+            constrained_layout=True)
+
+    iso1=gplot.Isofill(var2ano, num=11, zero=1, split=0)
+    gplot.plot2(var2ano, iso1, axes.flat[0], legend='local',
+            title='negatives and positives, split=0')
+
+    iso2=gplot.Isofill(var2ano, num=11, zero=1, split=1)
+    gplot.plot2(var2ano, iso2, axes.flat[1], legend='local',
+            title='negatives and positives, split=1')
+
+    iso3=gplot.Isofill(var2ano, num=11, zero=1, split=2)
+    gplot.plot2(var2ano, iso3, axes.flat[2], legend='local',
+            title='negatives and positives, split=2')
+
+    iso4=gplot.Isofill(var2, num=11, zero=1, split=2)
+    gplot.plot2(var2, iso4, axes.flat[3], legend='local',
+            title='all positive, split=2')
+
+    figure.show()
+    figure.tight_layout()
+
+
+The output is given in :numref:`Fig.%s <figure2>` below:
+
+.. _figure2:
+
+.. figure:: split_comparisons.png
+   :width: 600px
+   :align: center
+   :figclass: align-center
+
+   Effects of the ``split`` argument.
+   (a) do not split the colormap for data with negative and positive values (``split=0``).
+   (b) split the colormap if data have both negative and positive values (``split=1``).
+   (c) force split the colormap when data have both negative and positive values (``split=2``).
+   (c) force split the colormap when data have only positive values (``split=2``).
+
+
+To summarize:
+
+* ``split=0``: do not split the colormap.
+* ``split=1``: split the colormap if data have both positive and negative values. Do not split if data have only negative or only positive values.
+* ``split=2``: force split. If the data have both positive and negative values, the effect
+  is the same as ``split=1``. If data have only positive (negative) values, will only
+  use the right (left) half of the colormap.
+
+
+.. note::
+
+    Positive v.s. negative is one way of splitting the data range into 2 halves,
+    at the dividing value of ``0``.
+    It is possible to use arbitray dividing value, by using the ``vcenter`` argument.
+    E.g.  ``iso = gplot.Isofill(var, num=10, split=2, vcenter=10)``
+
+
 
 Overlay with stroke
 ##############################
 
-Overlay with stroke
-##############################
+
+It is possible to stroke the isofill/contourf levels with a layer of thin
+contour lines. E.g.
+
+::
+
+    import matplotlib.pyplot as plt
+    import gplot
+    from gplot.lib import netcdf4_utils
+
+    # read in SLP data
+    var1 = netcdf4_utils.readData('msl')
+    lats = netcdf4_utils.readData('latitude')
+    lons = netcdf4_utils.readData('longitude')
+
+    figure, (ax1, ax2) = plt.subplots(figsize=(12, 5), nrows=1, ncols=2,
+            constrained_layout=True)
+
+    iso1 = gplot.Isofill(var1)
+    gplot.plot2(var1, iso1, ax1, title='Basemap isofill without stroke',
+                projection='cyl')
+
+    iso2 = gplot.Isofill(var1, stroke=True)
+    gplot.plot2(var1, iso2, ax2, title='Basemap isofill with stroke',
+                projection='cyl')
+    figure.show()
+
+The result is given in :numref:`Fig.%s <figure3>` below:
+
+.. _figure3:
+
+.. figure:: stroke_comparison.png
+   :width: 600px
+   :align: center
+   :figclass: align-center
+
+   Effects of the ``stroke`` argument.
+   (a) isofill plot without stroke.
+   (b) isofill plot with stroke.
+
+
+``stroke`` is set to ``False`` by default. To further control the line width of
+the stroke, use the ``stroke_lw`` argument, which is default to ``0.2``.
+The line color is default to a grey color (``stroke_color = 0.3``), and line style
+default to solid (``stroke_linestyle = '-'``).
+
+
+
