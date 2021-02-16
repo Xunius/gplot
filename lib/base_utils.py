@@ -1710,10 +1710,9 @@ class Plot2D(object):
         if self.axes_grid:
             self.ax.grid(True)
 
-        if self.label_axes is True:
+        if self.label_axes == True:
             self.ax.tick_params(axis='both', which='major',
                                 labelsize=self._fontsize)
-            return
 
         # --------Turn off lat/lon labels if required--------
         if self.clean or not self.label_axes:
