@@ -44,7 +44,7 @@ __all__=[
         'restoreParams', 'mkscale', 'index2Letter', 'remappedColorMap2',
         'getColormap', 'getColorbarPad', 'pickPoint', 'getSlab', 'regridToReso',
         'getMissingMask', 'getQuantiles', 'getRange', 'plot2',
-        'Isofill', 'Isoline', 'Boxfill', 'Hatch', 'Shading', 'GIS', 'Quiver',
+        'Isofill', 'Isoline', 'Boxfill', 'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver',
         'Plot2D', 'Plot2Quiver'
         ]
 
@@ -1194,6 +1194,58 @@ class Boxfill(PlotMethod):
         self.norm = self.adjustColormap(vmin=self.vmin, vmax=self.vmax)
 
 
+class Pcolor(Boxfill):
+    '''Plotting method for pcolormesh plots'''
+    def __init__(self, vars, split=2, min_level=None, max_level=None,
+                 ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
+        '''Plotting method for pcolormesh plots
+
+        Args:
+            vars (ndarray or list): if ndarray, input data to create 2d plot
+                from. If list, a list of ndarrays.
+        Keyword Args:
+            split (int): whether to split the colormap at a given value (<vcenter>) into
+                2 parts or not. Can be 1 of these 3 values:
+                0: do not split.
+                1: split at <vcenter> only if range of data in <vars> strides
+                   <vcenter>.
+                2: force split at <vcenter>.
+                If split and data range strides across <vcenter>, will use
+                the lower half of the colormap for values <= <vcenter>, the
+                upper half of the colormap for values >= <vcenter>.
+                If split and data range on 1 side of <vcenter>, will only use
+                only half of the colormap range, depending on whether data
+                are on which side of <vcenter>.
+            levels (list, tuple or 1darray): specified contour levels. If not
+                given, compute contour levels using <num>, <zero>, <min_level>,
+                <max_level>, <ql>, <qr>.
+            min_level (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            max_level (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            ql (float or None): specified minimum left quantile to plot. If None,
+                determine from <min_level> if given. If both <min_level> and <ql> are
+                None, use minimum value from <vars>. If both given, take the larger.
+            qr (float or None): specified maximum right quantile (e.g. 0.01 for
+                the 99th percentile) to plot. If None,
+                determine from <max_level> if given. If both <max_level> and <qr> are
+                None, use maximum value from <vars>. If both given, take the smaller.
+            vcenter (float): value at which to split the colormap. Default to 0.
+            cmap (matplotlib colormap or None): colormap to use. If None, use
+                the default in rcParams['default_cmap'].
+            verbose (bool): whether to print some info or not.
+        '''
+
+        super(
+            Pcolor, self).__init__(
+            vars, split=split, min_level=min_level, max_level=max_level, ql=ql,
+            qr=qr, vcenter=vcenter, cmap=cmap, verbose=verbose)
+
+        self.method = 'pcolor'
+
+
 class Hatch(object):
     '''Plotting method for hatching plots'''
     def __init__(self, hatch='.', alpha=0.7):
@@ -1642,8 +1694,8 @@ class Plot2D(object):
 
         cs = self.ax.pcolormesh(
             self.lons, self.lats, self.var, cmap=self.method.cmap,
-            vmin=self.method.levels[0],
-            vmax=self.method.levels[-1])
+            vmin=self.method.vmin,
+            vmax=self.method.vmax)
 
         return cs
 

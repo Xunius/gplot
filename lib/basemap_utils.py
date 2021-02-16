@@ -280,8 +280,8 @@ class Plot2Basemap(Plot2D):
 
         cs = self.bmap.pcolormesh(
             self.lons, self.lats, self.var, latlon=True, cmap=self.method.cmap,
-            ax=self.ax, vmin=self.method.levels[0],
-            vmax=self.method.levels[-1])
+            ax=self.ax, vmin=self.method.vmin,
+            vmax=self.method.vmax)
 
         return cs
 
