@@ -117,21 +117,21 @@ def mkscale(n1, n2, nc=12, zero=1):
         cnt (list): a list of levels between approximately <n1> and <n2>,
                     with a number of levels more or less as <nc>.
 
-    Examples of Use:
-    >>> vcs.mkscale(0,100)
-    [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
-    >>> vcs.mkscale(0,100,nc=5)
-    [0.0, 20.0, 40.0, 60.0, 80.0, 100.0]
-    >>> vcs.mkscale(-10,100,nc=5)
-    [-25.0, 0.0, 25.0, 50.0, 75.0, 100.0]
-    >>> vcs.mkscale(-10,100,nc=5,zero=-1)
-    [-20.0, 20.0, 60.0, 100.0]
-    >>> vcs.mkscale(2,20)
-    [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
-    >>> vcs.mkscale(2,20,zero=2)
-    [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
+        Examples of Use:
+        >>> vcs.mkscale(0,100)
+        [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
+        >>> vcs.mkscale(0,100,nc=5)
+        [0.0, 20.0, 40.0, 60.0, 80.0, 100.0]
+        >>> vcs.mkscale(-10,100,nc=5)
+        [-25.0, 0.0, 25.0, 50.0, 75.0, 100.0]
+        >>> vcs.mkscale(-10,100,nc=5,zero=-1)
+        [-20.0, 20.0, 60.0, 100.0]
+        >>> vcs.mkscale(2,20)
+        [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
+        >>> vcs.mkscale(2,20,zero=2)
+        [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
 
-    Copied from vcs/util.py
+        Copied from vcs/util.py
     '''
     if n1 == n2:
         return [n1]
@@ -220,18 +220,18 @@ def index2Letter(index, verbose=True):
     Returns:
         letter (str): corresponding letter index for <index>.
 
-    <index> to letter indexing is defined as following:
-    ----------------------------------------------------
-    <index>                     letter index
-    ----------------------------------------------------
-       1                            (a)
-       2                            (b)
-       3                            (c)
-       ...                          ...
-       27                           (aa)
-       ...
-       52                           (zz)
-    ----------------------------------------------------
+        <index> to letter indexing is defined as following:
+        ----------------------------------------------------
+        <index>                     letter index
+        ----------------------------------------------------
+           1                            (a)
+           2                            (b)
+           3                            (c)
+           ...                          ...
+           27                           (aa)
+           ...
+           52                           (zz)
+        ----------------------------------------------------
     '''
 
     index_dict = {
@@ -2237,7 +2237,6 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
         isgeomap (bool): whether to use geographcial plot.
         projection (str): if use geographical plot, the map projection.
         bmap (basemap obj or None): reuse an existing basemap obj if not None.
-    Other keyword args:
         title (str or None): text as the figure title if <ax> is the
             single plot in the figure. If None, automatically
             get an alphabetic subtitle if <ax> is a subplot, e.g. '(a)'
