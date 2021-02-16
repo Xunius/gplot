@@ -63,14 +63,30 @@ def test_basemap_isofill_split():
     return
 
 
-def test_basemap_isoline():
+def test_basemap_isolines():
 
-    figure = plt.figure(figsize=(12, 10), dpi=100)
-    ax = figure.add_subplot(111)
-    iso = gplot.Isoline(var1-np.mean(var1), num=10, zero=1,
-                        split=2, black=True, linewidth=2)
-    gplot.plot2(var1-np.mean(var1), iso, ax, legend=None,
-                title='Isoline', projection='cyl')
+    var1ano = var1 - np.mean(var1)
+
+    figure, axes = plt.subplots( figsize=(14, 8), nrows=2, ncols=2,
+            constrained_layout=True)
+
+    iso1 = gplot.Isoline(var1, num=11)
+    gplot.plot2(var1, iso1, ax=axes.flat[0], legend='local',
+            title='Default Isoline', projection='cyl')
+
+    iso2 = gplot.Isoline(var1, num=11, linewidth=2., color='b')
+    gplot.plot2(var1, iso2, ax=axes.flat[1], legend='local',
+            title='Thicker, blue Isoline', projection='cyl')
+
+    iso3 = gplot.Isoline(var1ano, num=11, black=True, dash_negative=True)
+    gplot.plot2(var1ano, iso3, ax=axes.flat[2], legend='local',
+            title='Dashed negative, black Isoline', projection='cyl')
+
+    iso4 = gplot.Isoline(var1ano, num=11, zero=1, black=True, dash_negative=True,
+            bold_lines=[0,], label=True, label_box=True)
+    gplot.plot2(var1ano, iso4, ax=axes.flat[3], legend='local',
+            title='Dashed negative, black Isoline, 0 bold, labels', projection='cyl')
+
     figure.show()
 
     return
@@ -482,7 +498,7 @@ if __name__ == '__main__':
 
     test_basemap_isofill_overflow()
     test_basemap_isofill_split()
-    test_basemap_isoline()
+    test_basemap_isolines()
     test_basemap_boxfill()
     test_basemap_axes_grid()
     test_basemap_label_axes_True()

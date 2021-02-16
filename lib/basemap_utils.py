@@ -261,6 +261,10 @@ class Plot2Basemap(Plot2D):
             for bii in idx_bold:
                 cs.collections[bii].set_linewidth(self.method.linewidth*multi)
 
+        #-------------------Plot labels-------------------
+        if self.method.label:
+            self.plotContourLabels(cs)
+
         return cs
 
     def _plotBoxfill(self):

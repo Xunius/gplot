@@ -32,6 +32,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+from matplotlib import ticker
 from matplotlib.pyplot import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colorbar as mcbar
@@ -1052,7 +1053,9 @@ class Isoline(Isofill):
                  min_level=None, max_level=None, ql=None, qr=None,
                  vcenter=0, cmap=None,
                  black=False, color=None, linewidth=1.0, alpha=1.0,
-                 dash_negative=True, bold_lines=None, verbose=True):
+                 dash_negative=True, bold_lines=None,
+                 label=False, label_fmt=None, label_box=False, label_box_color='w',
+                 verbose=True):
         '''Plotting method for isoline/contour plots
 
         Args:
@@ -1102,6 +1105,14 @@ class Isoline(Isofill):
                 contours.
             bols_lines (list if None): if a list, values to highlight using bold lines
                 (line width scaled by 2.0).
+            label (bool): whether to label the contour lines or not.
+            label_fmt (str or dict or None): if <label> is True, format string to format
+                contour levels. E.g. '%0.2f'. If None, automatically derive
+                a format suitable for the contour levels.
+            label_box (bool): whether to put contour labels in a bounding box
+                with background color or not.
+            label_box_color (str or color tuple): if <label_box> is True, the
+                background color for the bounding boxes for the labels.
             verbose (bool): whether to print some info or not.
         '''
 
@@ -1118,6 +1129,10 @@ class Isoline(Isofill):
         self.dash_negative = dash_negative
         self.bold_lines = bold_lines
         self.method = 'isoline'
+        self.label = label
+        self.label_fmt = label_fmt
+        self.label_box = label_box
+        self.label_box_color = label_box_color
 
         return
 
@@ -1577,7 +1592,35 @@ class Plot2D(object):
                 cs.collections[bii].set_linewidth(
                     self.method.linewidth * multi)
 
+        #-------------------Plot labels-------------------
+        if self.method.label:
+            self.plotContourLabels(cs)
+
         return cs
+
+    def plotContourLabels(self, cs):
+
+        if self.method.label_fmt is None:
+            # save the old xaxis formatter
+            old_formatter = self.ax.xaxis.get_major_formatter()
+            # get a new scalar formatter
+            formatter = ticker.ScalarFormatter()
+            # for some reason one needs to set as major and call format_ticks()
+            # before this thing can do formatter(value)
+            self.ax.xaxis.set_major_formatter(formatter)
+            formatter.format_ticks(cs.levels)
+            clabels = cs.clabel(inline=1, fmt=formatter)
+            # restore old xaxis formatter
+            self.ax.xaxis.set_major_formatter(old_formatter)
+        else:
+            clabels = cs.clabel(inline=1, fmt=self.method.label_fmt)
+
+        if self.method.label_box:
+            [txt.set_bbox(dict(facecolor=self.method.label_box_color,
+                edgecolor='none', pad=0)) for txt in clabels]
+
+        return
+
 
     def _plotBoxfill(self):
         '''Core plotting function, boxfill/imshow'''
@@ -1878,6 +1921,8 @@ class Plot2D(object):
             if len(self.cs.levels) < 2:
                 return
             if self.method.method == 'isoline' and self.method.black:
+                return
+            if self.method.method == 'isoline' and self.method.color is not None:
                 return
             isdrawedges = True
         else:
