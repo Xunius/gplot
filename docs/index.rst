@@ -15,6 +15,10 @@ Introduction
 
 *Gplot* is a thin wrapper of `matplotlib`, `basemap` and `cartopy` for
 quick and easy creations of geographical plots.
+It is designed to make publish-ready quality figure with as few lines as
+possible, while leaving the possibility to fine-tune various aspects of the
+plots.
+
 
 
 Installation
@@ -43,16 +47,15 @@ Dependencies
 
 * Optional:
 
-        * scipy: optional, developed in 1.2.1. For 2D interpolation.
-
+        * scipy: optional, developed in 1.2.1. For 2D interpolation in quiver plots only.
         * For plot the geography: basemap or cartopy.
 
                 * basemap: developed in 1.2.0.
-                * cartopy: optional, developed in 0.16.0, not fully supported yet.
+                * cartopy: developed in 0.16.0, not fully supported yet.
 
         * For netCDF file reading: netCDF4 or CDAT or xarray or iris.
 
-                * netCDF4: included as dependencies, developed in 1.5.5.1.
+                * netCDF4: developed in 1.5.5.1.
                 * cdms module of CDAT: developed in 3.1.5.
                 * xarray: not implemented yet.
                 * iris: not implemented yet.
@@ -66,21 +69,21 @@ using the following snippet:
 
 ::
 
-    import matplotlib.pyplot as plt
-    import gplot
-    from gplot.lib import netcdf4_utils
+   import matplotlib.pyplot as plt
+   import gplot
+   from gplot.lib import netcdf4_utils
 
-    var = netcdf4_utils.readData('msl')
-    lats = netcdf4_utils.readData('latitude')
-    lons = netcdf4_utils.readData('longitude')
+   var = netcdf4_utils.readData('msl')
+   lats = netcdf4_utils.readData('latitude')
+   lons = netcdf4_utils.readData('longitude')
 
-    figure = plt.figure(figsize=(12, 10), dpi=100)
-    ax = figure.add_subplot(111)
-    iso = gplot.Isofill(var)
-    gplot.plot2(var, iso, ax, xarray=lons, yarray=lats,
-                title='Default basemap', projection='cyl',
-                nc_interface='netcdf4')
-    figure.show()
+   figure = plt.figure(figsize=(12, 10), dpi=100)
+   ax = figure.add_subplot(111)
+   iso = gplot.Isofill(var)
+   gplot.plot2(var, iso, ax, xarray=lons, yarray=lats,
+               title='Default basemap', projection='cyl',
+               nc_interface='netcdf4')
+   figure.show()
 
 The output is given below:
 
@@ -98,7 +101,6 @@ Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Topics:
 
     Basic workflow <basic>
     Isofill/Contourf plots <isofill>
