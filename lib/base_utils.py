@@ -17,7 +17,7 @@ Update time: 2021-02-13 10:06:58.
 # TODO: global colorbar placement is not smart enough. *UPDATE* made some changes
 #       recommended to use constrained_layout in creating the figure and
 #       create all subplot axes before hand.
-# TODO: add Plot2QuiverCarotpy
+# TODO: add Plot2QuiverCartopy
 # TODO: consider remove bmap input arg
 # TODO make it possible to use barbs plot
 # TODO make it possible to use colormap to decode quiver magnitude, instead of
@@ -969,8 +969,8 @@ class Isofill(PlotMethod):
         Keyword Args:
             num (int): the desired number of contour levels. NOTE that the
                 resultant number may be slightly different.
-            zero (int): whether 0 is allowed to be a contour level. 0 for not allowed,
-                1 otherwise.
+            zero (int): whether 0 is allowed to be a contour level. -1 for not allowed,
+                0 or 1 otherwise.
             split (int): whether to split the colormap at a given value (<vcenter>) into
                 2 parts or not. Can be 1 of these 3 values:
                 0: do not split.
@@ -1061,8 +1061,8 @@ class Isoline(Isofill):
         Keyword Args:
             num (int): the desired number of contour levels. NOTE that the
                 resultant number may be slightly different.
-            zero (int): whether 0 is allowed to be a contour level. 0 for not allowed,
-                1 otherwise.
+            zero (int): whether 0 is allowed to be a contour level. -1 for not allowed,
+                0 or 1 otherwise.
             split (int): whether to split the colormap at a given value (<vcenter>) into
                 2 parts or not. Can be 1 of these 3 values:
                 0: do not split.
