@@ -67,25 +67,29 @@ def test_basemap_isolines():
 
     var1ano = var1 - np.mean(var1)
 
-    figure, axes = plt.subplots( figsize=(14, 8), nrows=2, ncols=2,
-            constrained_layout=True)
+    figure, axes = plt.subplots(figsize=(14, 8), nrows=2, ncols=2,
+                                constrained_layout=True)
 
     iso1 = gplot.Isoline(var1, num=11)
     gplot.plot2(var1, iso1, ax=axes.flat[0], legend='local',
-            title='Default Isoline', projection='cyl')
+                title='Default Isoline', projection='cyl')
 
     iso2 = gplot.Isoline(var1, num=11, linewidth=2., color='b')
     gplot.plot2(var1, iso2, ax=axes.flat[1], legend='local',
-            title='Thicker, blue Isoline', projection='cyl')
+                title='Thicker, blue Isoline', projection='cyl')
 
     iso3 = gplot.Isoline(var1ano, num=11, black=True, dash_negative=True)
     gplot.plot2(var1ano, iso3, ax=axes.flat[2], legend='local',
-            title='Dashed negative, black Isoline', projection='cyl')
+                title='Dashed negative, black Isoline', projection='cyl')
 
-    iso4 = gplot.Isoline(var1ano, num=11, zero=1, black=True, dash_negative=True,
-            bold_lines=[0,], label=True, label_box=True)
-    gplot.plot2(var1ano, iso4, ax=axes.flat[3], legend='local',
-            title='Dashed negative, black Isoline, 0 bold, labels', projection='cyl')
+    iso4 = gplot.Isoline(
+        var1ano, num=11, zero=1, black=True, dash_negative=True,
+        bold_lines=[0, ],
+        label=True, label_box=True)
+    gplot.plot2(
+        var1ano, iso4, ax=axes.flat[3],
+        legend='local', title='Dashed negative, black Isoline, 0 bold, labels',
+        projection='cyl')
 
     figure.show()
 
@@ -98,6 +102,21 @@ def test_basemap_boxfill():
     ax = figure.add_subplot(111)
     box = gplot.Boxfill(var1)
     gplot.plot2(var1, box, ax, title='default Boxfill', projection='cyl')
+    figure.show()
+
+    return
+
+
+def test_basemap_boxfill_and_pcolor():
+
+    figure, axes = plt.subplots( figsize=(12, 6), nrows=1, ncols=2,
+            constrained_layout=True)
+    box = gplot.Boxfill(var1)
+    pc = gplot.Pcolor(var1)
+    gplot.plot2( var1, box, axes[0], title='default Boxfill', projection='cyl',
+            legend='local')
+    gplot.plot2( var1, pc, axes[1], title='default Pcolor', projection='cyl',
+            legend='local')
     figure.show()
 
     return
@@ -205,10 +224,11 @@ def test_basemap_stroke():
 
     return
 
+
 def test_basemap_stroke_comparison():
 
     figure, (ax1, ax2) = plt.subplots(figsize=(12, 5), nrows=1, ncols=2,
-            constrained_layout=True)
+                                      constrained_layout=True)
 
     iso1 = gplot.Isofill(var1)
     gplot.plot2(var1, iso1, ax1, title='Basemap isofill without stroke',
@@ -220,6 +240,7 @@ def test_basemap_stroke_comparison():
     figure.show()
 
     return
+
 
 def test_basemap_subplots():
 
@@ -500,6 +521,7 @@ if __name__ == '__main__':
     test_basemap_isofill_split()
     test_basemap_isolines()
     test_basemap_boxfill()
+    test_basemap_boxfill_and_pcolor()
     test_basemap_axes_grid()
     test_basemap_label_axes_True()
     test_basemap_label_axes_False()
