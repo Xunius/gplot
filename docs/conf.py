@@ -25,7 +25,7 @@ copyright = '2021, Guangzhi XU'
 author = 'Guangzhi XU'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.2a'
+release = 'v0.3a'
 
 
 # -- General configuration ---------------------------------------------------
