@@ -391,6 +391,7 @@ def test_basemap_quiver():
         u, v, q, xarray=lons, yarray=lats, ax=ax, title='default quiver',
         projection='cyl')
     pquiver.plot()
+    __import__('pdb').set_trace()
 
     figure.show()
 
@@ -468,6 +469,51 @@ def test_basemap_quiver_scale_keylength():
 
     return
 
+def test_basemap_quiver_comparison():
+
+    figure, axes = plt.subplots(figsize=(14, 10), nrows=2, ncols=2,
+                                      constrained_layout=True)
+
+    q1 = gplot.Quiver()
+    gplot.plot2(u, q1, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[0], title='default quiver', projection='cyl')
+
+    q2 = gplot.Quiver(step=8)
+    gplot.plot2(u, q2, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[1], title='step=8', projection='cyl')
+
+    q3 = gplot.Quiver(reso=4)
+    gplot.plot2(u, q3, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[2], title='reso=4', projection='cyl')
+
+    q4 = gplot.Quiver(reso=8)
+    gplot.plot2(u, q4, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[3], title='reso=8', projection='cyl')
+
+    figure.show()
+
+def test_basemap_quiver_comparison2():
+
+    figure, axes = plt.subplots(figsize=(14, 10), nrows=2, ncols=2,
+                                      constrained_layout=True)
+
+    q1 = gplot.Quiver(step=8, scale=None)
+    gplot.plot2(u, q1, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[0], title='step=8, scale=None', projection='cyl')
+
+    q2 = gplot.Quiver(step=8, scale=200)
+    gplot.plot2(u, q2, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[1], title='step=8, scale=200', projection='cyl')
+
+    q3 = gplot.Quiver(step=8, scale=500)
+    gplot.plot2(u, q3, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[2], title='step=8, scale=500', projection='cyl')
+
+    q4 = gplot.Quiver(step=8, scale=500, keylength=20)
+    gplot.plot2(u, q4, var_v=v, xarray=lons, yarray=lats,
+                ax=axes.flat[3], title='step=8, scale=500, keylength=20', projection='cyl')
+
+    figure.show()
 
 def test_basemap_quiver_overlay():
 
@@ -546,3 +592,5 @@ if __name__ == '__main__':
     test_basemap_quiver_scale_keylength()
     test_basemap_quiver_overlay()
     test_basemap_quiver_overlay2()
+    test_basemap_quiver_comparison()
+    test_basemap_quiver_comparison2()

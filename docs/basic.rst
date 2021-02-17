@@ -11,26 +11,26 @@ Overall design of gplot
 The overarching structure of *gplot* is pretty simple (see :numref:`Fig.%s <figure1>`):
 there are 2 major plotting classes, *Plot2D* and *Plot2Quiver*. The latter
 is specifically for 2D quiver plots, and the former
-handles mostly commonly used 2D visualization types, including
+handles commonly used 2D visualization types, including
 
-* contour/isoline
-* contourf/isofill
-* imshow/boxfill
-* pcolormesh
+* isoline/contou
+* isofill/contourf
+* boxfill/imshow/pcolormesh
 * hatching
 
 These 2 classes accept *ndarray* as inputs, which can be provided by 4 widely
 used *netCDF* file I/O modules: *netcdf4*, *CDAT*, *Iris* and *xarray*.
 Note that these are optional dependencies, and both *Plot2D* and
-*Plot2Quiver* works for plain *ndarray* data as well.
+*Plot2Quiver* work for plain *ndarray* data as well.
 
 .. note::
 
    Only *netcdf4* and *CDAT* are currently supported. For the latter, only
    its *cdms2* module is required.
 
-On top of *Plot2D* and *Plot2Quiver*, plotting with geographical map projections
-are supported by *basemap* or *Cartopy*, giving rise to 4 derived classes:
+On top of *Plot2D* and *Plot2Quiver*, plotting with geographical map
+projections are supported by utilizing *basemap* or *Cartopy*, giving rise to 4
+derived classes:
 
 * **Plot2Basemap**: 2D plots as *Plot2D* but using *basemap* as the "backend" for geographical map projections.
 * **Plot2QuiverBasemap**: 2D quiver plots as *Plot2Quiver* but using *basemap* as the "backend" for geographical map projections.
@@ -40,8 +40,9 @@ are supported by *basemap* or *Cartopy*, giving rise to 4 derived classes:
 .. note::
 
    *basemap* has been deprecated, however, *Cartopy* is not fully mature in terms
-   of features and robustness. More attention is paid on *basemap* plots, and
-   the *Cartopy* counterparts are largely work-in-process at the moment.
+   of features and robustness. In *gplot*, more attention is paid on *basemap*
+   plots, and the *Cartopy* counterparts are largely work-in-process at the
+   moment.
 
 
 .. _figure1:
@@ -74,8 +75,8 @@ where:
 * ``var`` is the ``ndarray`` input data to be plotted.
 * ``iso`` is an ``Isofill`` object, which defines an isofill/contourf plot. More
   details on ``Isofill`` are given in :doc:`isofill`.
-* ``lons`` and ``lats`` give the longitude and latitude coordinates, respectively. They
-  define the geographical domain to generate the map.
+* ``lons`` and ``lats`` give the longitude and latitude coordinates,
+  respectively. They define the geographical domain to generate the map.
 
 
 This also illustrates the basic "syntax" of *gplot*'s plotting function:
@@ -99,8 +100,9 @@ Similarly, for a 2D quiver plot example:
     figure.show()
 
 
-Note that in this case, there are 2 input arrays (``u`` and ``v``), the u- and v- velocity
-components. And ``q = gplot.Quiver(step=8)`` defines the plotting method.
+Note that in this case, there are 2 input arrays (``u`` and ``v``), the u- and
+v- velocity components. And ``q = gplot.Quiver(step=8)`` defines the plotting
+method.
 
 With these 3 basic elements -- input array, plotting method and axis --
 provided, *gplot* will try to handle the remaining trifles for you, including
@@ -132,6 +134,5 @@ And the 2nd example can be achieved using:
 Note that the v- component has been provided using the ``var_v`` keyword argument.
 
 These design choices are taken to achieve the primary goal of *gplot*, which is
-to help one create good enough plots as quickly and easily as possible. They
-may not be publish-ready, but should visualize the data accurately, and can
-be mass-produced with relatively fewer lines of code.
+to help create good enough plots as quickly and easily as possible.
+

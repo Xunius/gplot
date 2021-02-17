@@ -13,10 +13,10 @@ Welcome to Gplot's documentation!
 Introduction
 ############
 
-*Gplot* is a thin wrapper of `matplotlib`, `basemap` and `cartopy` for
+*Gplot* is a (thin) wrapper around `matplotlib`, `basemap` and `cartopy` for
 quick and easy creations of geographical plots.
-It is designed to make publish-ready quality figure with as few lines as
-possible, while leaving the possibility to fine-tune various aspects of the
+It is designed to create publish-ready figures with as few lines as
+possible, while preserving the possibility to fine-tune various aspects of the
 plots.
 
 
@@ -27,12 +27,12 @@ Installation
 Install from conda
 ^^^^^^^^^^^^^^^^^^
 
-``gplot`` can be installed in an existing conda environment:
+``gplot`` can be installed in an existing conda environment using:
 ::
 
     conda install -c guangzhi gplot
 
-will install ``gplot`` and its dependencies for Python 3.
+This will install ``gplot`` and its dependencies for Python 3.
 
 
 Dependencies
@@ -41,29 +41,29 @@ Dependencies
 * Mandatory:
 
         * OS: Linux or MacOS. Windows is not tested.
-        * Python: >= 3.
-        * numpy
-        * matplotlib: developed in 3.2.2. **NOTE** that versions later than 3.2.2 are incompatible with basemap.
+        * *Python*: >= 3.
+        * *numpy*
+        * *matplotlib*: developed in 3.2.2. **NOTE** that versions later than 3.2.2 are incompatible with *basemap*.
 
 * Optional:
 
-        * scipy: optional, developed in 1.2.1. For 2D interpolation in quiver plots only.
-        * For plot the geography: basemap or cartopy.
+        * *scipy*: optional, developed in 1.2.1. For 2D interpolation in quiver plots only.
+        * For plotting the geography: *basemap* or *Cartopy*.
 
-                * basemap: developed in 1.2.0.
-                * cartopy: developed in 0.16.0, not fully supported yet.
+                * *basemap*: developed in 1.2.0.
+                * *Cartopy*: developed in 0.16.0, not fully supported yet.
 
-        * For netCDF file reading: netCDF4 or CDAT or xarray or iris.
+        * For *netCDF* file reading: *netCDF4* or *CDAT* or *xarray* or iris.
 
-                * netCDF4: developed in 1.5.5.1.
-                * cdms module of CDAT: developed in 3.1.5.
-                * xarray: not implemented yet.
-                * iris: not implemented yet.
+                * *netCDF4*: developed in 1.5.5.1.
+                * the *cdms* module of *CDAT*: developed in 3.1.5.
+                * *xarray*: not supported yet.
+                * *iris*: not supported yet.
 
 Quick start
 ###########
 
-After installation of `gplot` and `basemap`, create a isofill/contourf plot of
+After installation of `gplot` and `basemap`, create an isofill/contourf plot of
 the global sea level pressure field (sample data included in the installation)
 using the following snippet:
 

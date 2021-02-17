@@ -29,7 +29,7 @@ More explanations of these arguments are given in :doc:`isofill`.
 
 The :py:class:`base_utils.Pcolor` class shares the same signature as
 :py:class:`base_utils.Boxfill`, and their usages are also identical.
-(honestly, is there any difference between the two?)
+(Honestly, is there any difference between the two?)
 
 
 Basic plot example
@@ -70,3 +70,11 @@ The result is given in :numref:`Fig.%s <figure5>` below:
 
    Boxfill (a) and Pcolor (b) plot examples.
 
+
+The mappable object
+##############################
+
+Same as an isofill/isoline plot, the *mappable object* of a
+boxfill/imshow/pcolormesh plot is stored as an attribute of the
+:py:class:`base_utils.Plot2D` (or :py:class:`basemap_utils.Plot2Basemap`)
+object. See :ref:`mappable_obj`.

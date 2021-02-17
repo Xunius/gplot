@@ -7,7 +7,7 @@ Create isofill/contourf plots
 The ``Isofill`` class
 ##############################
 
-To create a isofill/contourf plot, one creates a :py:class:`base_utils.Isofill`
+To create an isofill/contourf plot, one creates a :py:class:`base_utils.Isofill`
 object as the plotting method, and passes it to the :py:class:`base_utils.Plot2D`
 constructor or the :py:func:`base_utils.plot2` function.
 
@@ -26,7 +26,7 @@ in :py:class:`base_utils.Isofill`:
 Your data may come with various orders of magnitudes, and sometimes it can be
 a bit tricky (and annoying) to manually craft the contour levels for each and
 every plot you create, particularly when you just want to have a quick read of
-the data. The 1st approach comes as a handy choice for such cases.
+the data. The 1st approach comes as handy for such cases.
 
 To automatically derive the contour levels, these input arguments to the
 constructor of :py:class:`base_utils.Isofill` are relevant:
@@ -34,9 +34,8 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
 * ``vars``: input data array(s).
 
   The 1st and only mandatory input argument is ``vars``, which is the input
-  ``ndarray`` to plot, or a list of ``ndarray``. This is used to determine the
-  value range of the input data. Missing values (masked or ``nan``) are not
-  taken into account.
+  ``ndarray``, or a list of arrays to be plotted. This is used to determine the
+  value range of the input data. Missing values (masked or ``nan``) are omitted.
 
   The list input form is useful when one wants to use the same set of contour
   levels to plot multiple pieces of data.
@@ -47,7 +46,8 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
   resultant number may be sightly different.
 
   What is meant by "nice-looking" is that the contour level values won't be some
-  floating point numbers with 5+ decimal places, like what one would get using
+  floating point numbers with 5+ decimal places, like what one would get using,
+  for instance
 
   ::
 
@@ -68,23 +68,23 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
   ``zero = 0`` exerts no inference on the inclusion of ``0``.
 
   ``zero = -1`` prevents the number ``0`` from being included in the contour levels,
-  instead, there would be a 0-crossing contour interval, e.g. ``-2, 2``,
+  instead, there would be a 0-crossing contour interval, e.g. ``[-2, 2]``,
   that represent the 0-level with a range.
 
   This is very helpful in plots with a divergent colormap, e.g.
   ``plt.cm.RdBu``.  Your plot will have a white contour interval, rather than
   just various shades of blues and reds.  The white area represents a kind of
   buffer zone in which the difference is not far from 0, and the plot will
-  almost always end up being cleaner and more informative.
+  almost always end up being cleaner.
 
-* ``min_level``, ``max_level``, ``ql``, ``qr``: determines the lower and
+* ``min_level``, ``max_level``, ``ql``, ``qr``: determine the lower and
   upper bounds of the data range to plot.
 
   ``min_level`` and ``max_level`` are used to specify the *absolute* bounds. If
   ``None`` (the default), these are taken from the minimum and maximum values
   from ``vars``.
 
-  ``ql`` and ``qr`` are used to specify by relative bounds: ``ql`` for the left
+  ``ql`` and ``qr`` are used to specify by **relative** bounds: ``ql`` for the left
   quantile and ``qr`` for the right quantile. E.g. ``ql = 0.01`` takes the ``0.01``
   left quantile as the lower bound, and ``qr = 0.05`` takes the 0.95 quantile
   as the upper bound. These are useful for preventing some outliers from inflating
@@ -93,8 +93,13 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
   If both ``ql`` and ``min_level`` are given, whichever gives a greater absolute
   value is chosen as the lower bound. Similarly for ``qr`` and ``max_level``.
 
-  If the lower/upper bound doesn't cover the entire data range, an **extension**
-  is on the relevant side is activate:
+  .. note::
+
+     In order to arrive at nice-looking contour level numbers,
+     the resultant bounds may not be exactly as requested.
+
+  If the lower/upper bound does not cover the entire data range, an **extension**
+  on the relevant side is activated:
 
   ::
 
@@ -109,8 +114,7 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
 2. Manually specify the contour levels.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-Manual contour levels are simply specified by the `levels` optional argument:
+Manual contour levels are simply specified by the `levels` keyword argument:
 
 ::
 
@@ -129,20 +133,20 @@ Choose the colormap
 The colormap is specified using the ``cmap`` argument, which is default to
 a blue-white-red divergent colormap ``plt.cm.RdBu_r``.
 
-To use a different colormap, can provide with a different one from the *matplotlib*
-colormap collection, e.g. ``cmap = plt.cm.rainbow``. It is possible to provide
+To use a different colormap, provide one from the *matplotlib*'s
+colormap collection, e.g. ``cmap = plt.cm.rainbow``. It is possible to give
 only the name of the colormap as a string: ``cmap = 'rainbow'``.
 
 
 Split the colormap colors
 ##############################
 
-**Divergent colormaps** are commonly used in academic works. E.g. the
-``plt.cm.RdBu_r`` colormap is one divergent colormap, with a transition from
-dark blue (the minimum) to white in the middle, and finally to dark red (the
+**Divergent colormaps** are commonly used in academic works. The
+``plt.cm.RdBu_r`` colormap is one such example, with a transition from
+dark blue (the minimum) to white in the middle, and to dark red (the
 maximum) on the right.
 
-The middle color (white in this case) usually corresponds to critical
+The middle color (white in this case) usually corresponds to some critical
 transition in the data (e.g. going from negative to positive), therefore it is
 crucial to make sure they are aligned up. See an example:
 
@@ -211,14 +215,13 @@ To summarize:
 
     Positive v.s. negative is one way of splitting the data range into 2 halves,
     at the dividing value of ``0``.
-    It is possible to use arbitray dividing value, by using the ``vcenter`` argument.
+    It is possible to use an arbitray dividing value, by using the ``vcenter`` argument.
     E.g.  ``iso = gplot.Isofill(var, num=10, split=2, vcenter=10)``
 
 
 
 Overlay with stroke
 ##############################
-
 
 It is possible to stroke the isofill/contourf levels with a layer of thin
 contour lines. E.g.
@@ -266,4 +269,30 @@ The line color is default to a grey color (``stroke_color = 0.3``), and line sty
 default to solid (``stroke_linestyle = '-'``).
 
 
+.. _mappable_obj:
+
+The mappable object
+##############################
+
+*gplot* calls *matplotlib*'s (or *basemap*'s, if it is using *Plot2Basemap*)
+``contourf()`` function under the hood. The function returns a *mappable object*,
+e.g. ``cs = plt.contourf(data)``. This mappable object is stored as
+an attribute of the :py:class:`base_utils.Plot2D` (or
+:py:class:`basemap_utils.Plot2Basemap`) object:
+
+::
+
+    >>> pobj = Plot2Basemap(var, iso, lons, lats, ax=ax)
+    >>> pobj.plot()
+    >>> pobj.cs
+    <matplotlib.contour.QuadContourSet object at 0x7f0e3e6b4550>
+
+The same ``plotobj`` is returned by the :py:func:`base_utils.plot2` function, therefore,
+the mappable object can be retrieved using:
+
+::
+
+    >>> pobj = gplot.plot2(var, iso, ax, xarray=lons, yarray=lats)
+    >>> pobj.cs
+    <matplotlib.contour.QuadContourSet object at 0x7f0e3e6b4550>
 
