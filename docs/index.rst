@@ -109,7 +109,7 @@ Documentation
     Colorbar <colorbar>
     Quiver plots <quiver>
     Subplot layouts <subplots>
-    Misc <misc>
+    Others <others>
 
 
 gplot module contents

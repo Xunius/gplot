@@ -520,7 +520,7 @@ def test_basemap_quiver_overlay():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500)
     iso = gplot.Isofill(var1)
-    gplot.plot2(var1, iso, ax, title='default Plot2D', projection='cyl')
+    gplot.plot2(var1, iso, ax, projection='cyl')
 
     pquiver = Plot2QuiverBasemap(
         u, v, q, xarray=lons, yarray=lats, ax=ax, title='quiver overlay',
@@ -537,7 +537,7 @@ def test_basemap_quiver_overlay2():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500)
     iso = gplot.Isofill(var1)
-    gplot.plot2(var1, iso, ax, title='default Plot2D', projection='cyl')
+    gplot.plot2(var1, iso, ax, projection='cyl')
 
     gplot.plot2(u, q, var_v=v, xarray=lons, yarray=lats,
                 ax=ax, title='quiver overlay', projection='cyl')

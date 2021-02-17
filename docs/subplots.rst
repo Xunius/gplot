@@ -28,14 +28,15 @@ To iterate through the axes, one can use:
         ...
 
 
-**Note** that the ``constrained_layout=True`` argument is recommended. This
-will adjust the spacings of the subplots to avoid overlaps between subplots,
-and wasted spaces as well. **Do not** use ``figure.tight_layout()``
-afterwards, as it tends to mess up the placement of a shared, global colorbar.
+.. note::
+   the ``constrained_layout=True`` argument is recommended. This will
+   adjust the spacings of the subplots to avoid overlaps between subplots, and
+   wasted spaces as well. **Do not** use ``figure.tight_layout()`` afterwards,
+   as it tends to mess up the placement of a shared, global colorbar.
 
 .. note::
-   the placement of a ``global`` shared colorbar is currently not as robust
-   as a ``local`` colorbar. One may find the global colorbar tick labels
+   the placement of a globally shared colorbar is currently not as robust
+   as a local colorbar. One may find the global colorbar tick labels
    overlaping with those in the bottom row x-axis, if the ``constrained_layout``
    is not set to ``True``.
 
@@ -51,7 +52,7 @@ function a bit differently in different scenarios:
 
 * ``title = None``:
 
-    * If figure has only 1 subplot: no title is shown.
+    * If figure has only 1 subplot: no title is drawn.
     * If figure has more than 1 subplots, an alphabetic index is used as the
       subplot title, e.g. ``(a)`` for the 1st subplot, ``(b)`` for the 2nd, and
       so on. The order is row-major. After using up all the 26 letters, it will
@@ -67,9 +68,9 @@ function a bit differently in different scenarios:
 
 * ``title = (x) some_text``:
 
-    Where ``x`` is arbitrary string. Use ``(x) some_text`` as the title. This
+    Where ``x`` is an arbitrary string. Use ``(x) some_text`` as the title. This
     can be used to override the automatic row-major ordering of the subplot
-    indices. For instance, you want to label it as ``(k)`` as index when
+    indices. For instance, you want to label it as ``(k)`` when
     the subplot is at a position of ``(h)``.
 
-* ``title = 'none'`` or ``clean = True``: no title is plotted whatsoever.
+* ``title = 'none'`` or ``clean = True``: no title is drawn in any circumstances.
