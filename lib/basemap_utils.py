@@ -45,14 +45,13 @@ class Plot2Basemap(Plot2D):
                 is a subplot, prepend <title> with the alphabetic index.
                 One can force overriding the alphabetic index by giving a title
                 str in the format of '(x) xxxx', e.g. '(p) subplot-p'.
-            label_axes (bool or 'all' or ((left_y, right_y, top_y, top_y),
-                (left_x, right_x, top_x, top_x)) or None): controls axis ticks and
+            label_axes (bool or 'all' or tuple): controls axis ticks and
                 ticklabels. If True, don't exert any inference other than
                 changing the ticklabel fontsize, and let matplotlib put the
                 ticks and ticklabels (i.e. default only left and bottom axes).
                 If False, turn off all ticks and ticklabels.
                 If 'all', plot ticks and ticks labels on all 4 sides.
-                If ((left_y, right_y, top_y, top_y), (left_x, right_x, top_x, top_x)),
+                If (left, right, top, bottom),
                 specify which side to plot ticks/ticklabels. Each swith is a
                 bool or binary. If None, will set the ticks/ticklabels such
                 that the interior subplots have no ticks/ticklabels, edge
@@ -435,6 +434,7 @@ class Plot2Basemap(Plot2D):
                             top=labeltop, bottom=labelbottom)
 
         #------------------Set grid lines------------------
+        '''
         if self.label_axes is False or self.clean:
             #linewidth=0
             zorder=-2
@@ -443,7 +443,6 @@ class Plot2Basemap(Plot2D):
             zorder=-2
 
         #-----------------Draw axes/lables/ticks-----------------
-        '''
         self.ax.set_yticks(lat_labels_proj)
         self.ax.set_xticks(lon_labels_proj)
         self.ax.tick_params(axis='both',which='major',labelsize=self.font_size)
