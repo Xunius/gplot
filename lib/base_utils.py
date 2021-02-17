@@ -2099,15 +2099,17 @@ class Plot2D(object):
         if self.clean or self.title == 'none':
             return
 
-        if self.title is None and self.geo[0]*self.geo[1] == 1:
+        geo=self.ax._gplot_geo[:-1]
+
+        if self.title is None and geo[0]*geo[1] == 1:
             return
 
-        if self.title is None and self.geo[0]*self.geo[1] > 1:
+        if self.title is None and geo[0]*geo[1] > 1:
             title = index2Letter(self.subidx)
 
         elif isinstance(self.title, str):
 
-            if self.geo[0]*self.geo[1] > 1:
+            if geo[0]*geo[1] > 1:
                 # force indexing
                 rep = re.compile('^\\((.*?)\\)(.*)')
                 match = rep.match(self.title)
