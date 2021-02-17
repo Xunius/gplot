@@ -22,6 +22,10 @@ to the :py:func:`base_utils.Plot2D.__init__`, or the
 * ``legend = 'local'``: subplots in the figure have their own colorbars.
 * ``legend = None``: don't plot the colorbar.
 
+.. note::
+   *gplot* at the moment does not support colorbars that are shared by a subset
+   of the subplots, like in the examples given in the `matplotlib tutorial
+   <https://matplotlib.org/stable/gallery/subplots_axes_and_figures/colorbar_placement.html>`_.
 
 Additionally, the ``legend_ori`` argument specifies the orientation of the colorbar:
 
@@ -32,7 +36,9 @@ Additionally, the ``legend_ori`` argument specifies the orientation of the color
    Only the right (for vertical colorbar) and bottom (for horizontal colorbar)
    side of the subplot/figure placement are supported. Top and left side
    placement are not supported in *gplot*. However, one can create the colorbar
-   on their own, by setting ``legend = None``, and using the returned *mappable object*.
+   on their own, by setting ``legend = None``, and using the returned *mappable
+   object*.
+
 
 Overflows on a colorbar
 #############################

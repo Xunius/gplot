@@ -150,6 +150,8 @@ The middle color (white in this case) usually corresponds to some critical
 transition in the data (e.g. going from negative to positive), therefore it is
 crucial to make sure they are aligned up. See an example:
 
+.. _subplottitleexample:
+
 ::
 
     import matplotlib.pyplot as plt
