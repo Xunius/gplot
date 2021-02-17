@@ -391,7 +391,6 @@ def test_basemap_quiver():
         u, v, q, xarray=lons, yarray=lats, ax=ax, title='default quiver',
         projection='cyl')
     pquiver.plot()
-    __import__('pdb').set_trace()
 
     figure.show()
 

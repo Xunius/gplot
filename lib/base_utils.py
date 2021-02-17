@@ -2099,6 +2099,9 @@ class Plot2D(object):
         if self.clean or self.title == 'none':
             return
 
+        if self.title is None and self.geo[0]*self.geo[1] == 1:
+            return
+
         if self.title is None and self.geo[0]*self.geo[1] > 1:
             title = index2Letter(self.subidx)
 
@@ -2119,7 +2122,7 @@ class Plot2D(object):
             else:
                 title = self.title
 
-            self.ax.set_title(title, loc='left', fontsize=self._fontsize)
+        self.ax.set_title(title, loc='left', fontsize=self._fontsize)
 
         return
 
