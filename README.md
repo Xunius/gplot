@@ -1,5 +1,6 @@
 # GPlot -- a wrapper of `matplotlib`, `cartopy` and `basemap` for quick and easy geographical plots
 
+![](docs/_static/logo.png)
 
 # Install
 
