@@ -13,7 +13,7 @@ there are 2 major plotting classes, *Plot2D* and *Plot2Quiver*. The latter
 is specifically for 2D quiver plots, and the former
 handles commonly used 2D visualization types, including
 
-* isoline/contou
+* isoline/contour
 * isofill/contourf
 * boxfill/imshow/pcolormesh
 * hatching

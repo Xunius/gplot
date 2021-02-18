@@ -49,14 +49,15 @@ The different values of ``label_axes`` are:
 
 * ``True``: default.
 
-  * If figure has only 1 subplot, default to plot the left, bottom and rigtht
+  * If figure has only 1 subplot, default to plot the left, bottom and right
     hand side axes ticks and ticklabels.
   * If figure has more than 1 subplots, default to plot only the exterior facing
     (except for the top side)
     axes ticks and ticklabels. E.g. in a 2x2 subplot layout, the top-left subplot
-    has only the left axes ticks/ticklabels, the top-rigth subplot only the right
-    axes ticks/ticklabels, etc.. See :ref:`this figure <figure2>` for an example.
-    This is the same as the ``sharex`` and ``sharey`` options.
+    has only the left axes ticks/ticklabels, the bottom-right subplot only the
+    right and bottom axes ticks/ticklabels, etc.. See :ref:`this figure
+    <figure2>` for an example.  This is the same as the ``sharex`` and
+    ``sharey`` options in ``plt.subplots(sharex=True, sharey=True)``.
 
 * ``False``: turn off axes ticks/ticklabels on all sides.
 * ``'all'``: turn on axes ticks/ticklabels on all sides.
@@ -73,7 +74,7 @@ The different values of ``label_axes`` are:
    so as to avoid leaving a wasted space.
 
 Additionally, setting ``axes_grid = True`` will add axis grid lines. This is
-turned off by default, and is indenpentent from the axis ticks/ticklabels:
+turned off by default, and is independent from the axis ticks/ticklabels:
 one can have only axes grid lines without any ticks/ticklabels.
 
 
@@ -135,7 +136,7 @@ of these texts in a plot:
 * reference quiver key units
 
 When the figure has more than 1 subplots, the font sizes are adjusted by
-the following emprical formula:
+the following empirical formula:
 
 .. math::
    s_{adj} = \frac{7}{MAX\{n_r, n_c\}} + s_0
