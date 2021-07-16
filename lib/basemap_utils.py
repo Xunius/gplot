@@ -84,12 +84,12 @@ class Plot2Basemap(Plot2D):
         '''
 
         fill_color = fill_color or rcParams['fill_color']
-        title = title or rcParams['title']
+        #title = title or rcParams['title']
         label_axes = label_axes or rcParams['label_axes']
         axes_grid = axes_grid or rcParams['axes_grid']
         fontsize = fontsize or rcParams['fontsize']
         clean = clean or rcParams['clean']
-        legend = legend or rcParams['legend']
+        #legend = legend or rcParams['legend']
         legend_ori = legend_ori or rcParams['legend_ori']
 
         Plot2D.__init__(
