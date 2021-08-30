@@ -357,8 +357,9 @@ class Plot2Basemap(Plot2D):
         if self.clean:
             return
 
-        loclatlon = MaxNLocator(nbins='auto', steps=[
-                                1, 2, 2.5, 3, 4, 5, 6, 7, 8, 8.5, 9, 10])
+        loclatlon = MaxNLocator(nbins=5, steps=[
+            #1, 2, 2.5, 3, 4, 5, 6, 7, 8, 8.5, 9, 10])
+                                1, 2, 4, 5, 6, 8, 10])
         lat_labels = loclatlon.tick_values(
             np.min(self.yarray), np.max(self.yarray))
         lon_labels = loclatlon.tick_values(
