@@ -1407,12 +1407,12 @@ class Plot2D(object):
 
         # get kwargs
         fill_color = fill_color or rcParams['fill_color']
-        title = title or rcParams['title']
+        #title = title or rcParams['title']
         label_axes = label_axes or rcParams['label_axes']
         axes_grid = axes_grid or rcParams['axes_grid']
         fontsize = fontsize or rcParams['fontsize']
         clean = clean or rcParams['clean']
-        legend = legend or rcParams['legend']
+        #legend = legend or rcParams['legend']
         legend_ori = legend_ori or rcParams['legend_ori']
 
         self.var = var
@@ -1421,7 +1421,7 @@ class Plot2D(object):
         self.xarray = xarray
         self.yarray = yarray
 
-        self.title = title
+        self.title = str(title)
         self.label_axes = label_axes
         self.axes_grid = axes_grid
         self.legend = legend
@@ -1820,16 +1820,17 @@ class Plot2D(object):
 
         # get tick labels
         loclatlon = MaxNLocator(nbins='auto', steps=[
-                                1, 2, 4, 5, 6, 8, 10])
+            #1, 2, 2.5, 3, 4, 5, 6, 7, 8, 8.5, 9, 10])
+                                1, 2, 4, 5, 8, 10])
         lat_labels = loclatlon.tick_values(
             np.min(self.yarray), np.max(self.yarray))
         lon_labels = loclatlon.tick_values(
             np.min(self.xarray), np.max(self.xarray))
-        idx = np.where((lat_labels >= self.yarray[0]) & (
-            lat_labels <= self.yarray[-1]))
+        idx = np.where((lat_labels >= np.min(self.yarray)) & (
+            lat_labels <= np.max(self.yarray)))
         lat_labels = np.array(lat_labels)[idx]
-        idx = np.where((lon_labels >= self.xarray[0]) & (
-            lon_labels <= self.xarray[-1]))
+        idx = np.where((lon_labels >= np.min(self.xarray)) & (
+            lon_labels <= np.max(self.xarray)))
         lon_labels = np.array(lon_labels)[idx]
 
         if meridians[3] == 1:
