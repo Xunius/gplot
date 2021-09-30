@@ -271,6 +271,7 @@ class Plot2Basemap(Plot2D):
 
         cs = self.bmap.imshow(
             self.var, cmap=self.method.cmap, ax=self.ax, vmin=self.method.vmin,
+            norm=self.method.norm,
             vmax=self.method.vmax, interpolation='nearest')
         return cs
 
@@ -279,6 +280,7 @@ class Plot2Basemap(Plot2D):
 
         cs = self.bmap.pcolormesh(
             self.lons, self.lats, self.var, latlon=True, cmap=self.method.cmap,
+            norm=self.method.norm,
             ax=self.ax, vmin=self.method.vmin,
             vmax=self.method.vmax)
 

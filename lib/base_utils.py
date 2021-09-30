@@ -1191,7 +1191,7 @@ class Boxfill(PlotMethod):
         self.computeRange()
         self.computeExt(self.vmin, self.vmax)
         self.cmap = getColormap(self.cmap)
-        self.norm = self.adjustColormap(vmin=self.vmin, vmax=self.vmax)
+        self.cmap, self.norm = self.adjustColormap(vmin=self.vmin, vmax=self.vmax)
 
 
 class Pcolor(Boxfill):
@@ -1679,6 +1679,7 @@ class Plot2D(object):
 
         cs = self.ax.imshow(
             self.var, cmap=self.method.cmap, origin='lower',
+            norm=self.method.norm,
             vmin=self.method.vmin, vmax=self.method.vmax,
             interpolation='nearest',
             extent=[self.xarray.min(),
@@ -1694,6 +1695,7 @@ class Plot2D(object):
 
         cs = self.ax.pcolormesh(
             self.lons, self.lats, self.var, cmap=self.method.cmap,
+            norm=self.method.norm,
             vmin=self.method.vmin,
             vmax=self.method.vmax)
 
