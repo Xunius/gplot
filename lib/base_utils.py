@@ -43,7 +43,7 @@ __all__=[
         'rcParams',
         'restoreParams', 'mkscale', 'index2Letter', 'remappedColorMap2',
         'getColormap', 'getColorbarPad', 'pickPoint', 'getSlab', 'regridToReso',
-        'getMissingMask', 'getQuantiles', 'getRange', 'plot2',
+        'getMissingMask', 'getQuantiles', 'getRange', 'alternateTicks', 'plot2',
         'Isofill', 'Isoline', 'Boxfill', 'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver',
         'Plot2D', 'Plot2Quiver'
         ]
@@ -757,6 +757,80 @@ def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
         vmin, vmax = vmax, vmin
 
     return vmin, vmax, data_min, data_max
+
+def alternateTicks(cbar, ticks=None, fontsize=9):
+    '''Create alternating ticks and ticklabels for colorbar
+
+    Args:
+        cbar (matplotlib colorbar obj): input colorbar obj to alter.
+    Keyword Args:
+        ticks (list or array or None): ticks of the colorbar. If None,
+            get from cbar.get_ticks().
+        fontsize (str): font size for tick labels.
+    Returns:
+        cbar (matplotlib colorbar obj): the altered colorbar.
+
+    Only works for horizontal colorbar with discrete ticks. As vertical
+    colorbar doesn't tend to have overlapping tick labels issue.
+    '''
+
+    if ticks is None:
+        ticks = cbar.get_ticks()
+
+    if cbar.orientation == 'vertical':
+        cbar.set_ticks(ticks)
+        # skip vertical colorbar as digits are less likely to overlap
+        return cbar
+
+    lbot = ticks[1:][::2]  # labels at bottom
+    ltop = ticks[::2]  # labels on top
+
+    # tick all to get label text strings first
+    cbar.set_ticks(ticks)
+    formatter = cbar.ax.xaxis.get_major_formatter()
+    ticklabels = formatter.format_ticks(ticks)
+
+    # tick bottom
+    cbar.set_ticks(lbot)
+
+    # --------------Print top tick labels--------------
+    vmin = cbar.norm.vmin
+    vmax = cbar.norm.vmax
+
+    # ---------Compute top line tick locations---------
+    # need to take into account the overflow triangle
+    # by default the triangle is 5% of axis length
+    if cbar.extend == 'min':
+        shift_l = 0.05
+        scaling = 0.95
+    elif cbar.extend == 'max':
+        shift_l = 0.
+        scaling = 0.95
+    elif cbar.extend == 'both':
+        shift_l = 0.05
+        scaling = 0.90
+    else:
+        shift_l = 0.
+        scaling = 1.
+
+    for ii in range(len(ticklabels[::2])):
+        tii = ltop[ii]
+        tlii = ticklabels[::2][ii]
+        xii = shift_l+scaling*(tii-vmin)/(vmax-vmin)
+        # plot ticks
+        cbar.ax.plot([xii, xii],
+                     [1.0, 1.55],
+                     'k-', linewidth=0.5,
+                     clip_on=False,
+                     transform=cbar.ax.transAxes)
+
+        # plot tick labels
+        cbar.ax.text(xii,
+                     1.30, tlii,
+                     transform=cbar.ax.transAxes, va='bottom',
+                     ha='center', fontsize=fontsize)
+
+    return cbar
 
 # -----------------------------------------------------------------------
 # -                       Plotting method classes                       -
@@ -1489,8 +1563,12 @@ class Plot2D(object):
                 for a bigger grid layout.
         '''
 
-        geo = self.ax.get_geometry()[:2]
-        subidx = self.ax.get_geometry()[-1]
+        if not hasattr(self.ax, '_gplot_geo'):
+            geo = self.ax.get_geometry()[:2]
+            subidx = self.ax.get_geometry()[-1]
+        else:
+            geo = self.ax._gplot_geo[:2]
+            subidx = self.ax._gplot_geo[-1]
         scale = 1./max(geo)
         fontsize = 7*scale+self.fontsize  # empirical
 
@@ -1879,6 +1957,9 @@ class Plot2D(object):
 
         Only works for horizontal colorbar with discrete ticks. As vertical
         colorbar doesn't tend to have overlapping tick labels issue.
+
+        Update time: 2021-12-30 11:07:10: deprecated, use global function
+        alternateTicks() instead.
         '''
 
         if self.legend_ori == 'vertical':
@@ -2040,7 +2121,7 @@ class Plot2D(object):
                             pad=pad, fraction=0.07, aspect=35)
                 else:
                     dummybox = createDummyTextBox(self.ax, self._fontsize)
-                    pad = dummybox.height*1.2
+                    pad = dummybox.height*0.85
                     height = 0.02
                     fig.subplots_adjust(bottom=0.18)
                     cax = self.ax.get_figure().add_axes(
@@ -2065,7 +2146,8 @@ class Plot2D(object):
         # -------------------Re-format ticks-------------------
         if self.method.method in [
                 'isofill', 'isoline'] and self.legend_ori == 'horizontal':
-            cbar = self.alternateTicks(cbar, ticks)
+            #cbar = self.alternateTicks(cbar, ticks)
+            cbar = alternateTicks(cbar, ticks, self._fontsize)
         cbar.ax.tick_params(labelsize=self._fontsize)
 
         # --------------------Plot unit--------------------
@@ -2293,7 +2375,7 @@ class Plot2Quiver(Plot2D):
             slab = np.sqrt(np.array(self.var)**2 +
                            np.array(self.v)**2).flatten()
             slab = np.where(slab == np.inf, np.nan, slab)
-            keylength = np.nanpercentile(slab, 80)
+            keylength = np.nanpercentile(slab[slab>0], 80)
 
             # scale to 10-100
             lg = -np.log10(keylength)+2.
