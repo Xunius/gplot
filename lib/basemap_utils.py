@@ -296,7 +296,16 @@ class Plot2Basemap(Plot2D):
         cs = self.bmap.contourf(
             self.lons, self.lats, self.var, nlevel, latlon=True, colors='none',
             ax=self.ax, hatches=[None, self.method.hatch],
-            alpha=0.)
+            alpha=self.method.alpha)
+
+        # For each level, we set the color of its hatch
+        for i, collection in enumerate(cs.collections):
+            collection.set_edgecolor(self.method.color)
+            collection.set_facecolor('none')
+        # Doing this also colors in the box around each level
+        # We can remove the colored line around the levels by setting the linewidth to 0
+        for collection in cs.collections:
+            collection.set_linewidth(0.)
 
         return cs
 
