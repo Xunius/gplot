@@ -1003,6 +1003,7 @@ class PlotMethod(object):
         '''
 
         cmap = self.cmap
+        norm = None
 
         if self.split == 0:
             norm = None
@@ -1740,11 +1741,11 @@ class Plot2D(object):
             # before this thing can do formatter(value)
             self.ax.xaxis.set_major_formatter(formatter)
             formatter.format_ticks(cs.levels)
-            clabels = cs.clabel(inline=1, fmt=formatter)
+            clabels = cs.clabel(inline=1, fmt=formatter, fontsize=12)
             # restore old xaxis formatter
             self.ax.xaxis.set_major_formatter(old_formatter)
         else:
-            clabels = cs.clabel(inline=1, fmt=self.method.label_fmt)
+            clabels = cs.clabel(inline=1, fmt=self.method.label_fmt, fontsize=12)
 
         if self.method.label_box:
             [txt.set_bbox(dict(facecolor=self.method.label_box_color,
