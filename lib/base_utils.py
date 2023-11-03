@@ -31,7 +31,7 @@ import warnings
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize, TwoSlopeNorm
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib import ticker
 from matplotlib.pyplot import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
@@ -64,7 +64,7 @@ rcParams = {
     #'nc_interface' : 'cdat',
     'nc_interface'  : 'netcdf4',
     'geo_interface' : 'basemap',
-    'fontsize'      : 11,
+    'fontsize'      : 9,
     'verbose'       : True,
     'default_cmap'  : plt.cm.RdBu_r
 }
@@ -84,7 +84,7 @@ _default_rcParams = {
     'fix_aspect': False,
     'nc_interface': 'cdat',
     'geo_interface': 'cartopy',
-    'fontsize': 11,
+    'fontsize': 9,
     'verbose': True,
     'default_cmap': plt.cm.RdBu_r
 }
@@ -1822,10 +1822,10 @@ class Plot2D(object):
         '''Core plotting function, pattern hatching'''
 
         # nlevel=3 necessary?
-        if np.all(self.var == 0):
-            nlevel = 1
-        else:
-            nlevel = 3
+        #if np.all(self.var == 0):
+            #nlevel = 1
+        #else:
+            #nlevel = 3
         cs = self.ax.contourf(
             self.lons[0, :],
             self.lats[:, 0],
@@ -2114,10 +2114,10 @@ class Plot2D(object):
 
         if self.method.method in ['boxfill', 'pcolor']:
             ticks = None
-            extend = self.method.extend
+            #extend = self.method.extend
         else:
             ticks = getattr(self.method, 'levels', None)
-            extend = None
+            #extend = None
 
         if self.legend == 'global' and self.subidx > 1:
             return

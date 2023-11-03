@@ -10,7 +10,7 @@ import numpy as np
 from netCDF4 import Dataset
 
 current_dir = os.path.dirname(__file__)
-DATA_FILE_NAME = os.path.join(current_dir, '../tests/erai_data.nc')
+DATA_FILE_NAME = os.path.join(current_dir, '..', 'tests', 'fixtures', 'erai_data.nc')
 
 def readData(varid):
     '''Read in a variable from an netcdf file

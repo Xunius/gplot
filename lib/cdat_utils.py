@@ -10,7 +10,7 @@ import numpy as np
 import cdms2 as cdms
 
 current_dir, _=os.path.split(__file__)
-DATA_FILE_NAME=os.path.join(current_dir, '../tests/erai_data.nc')
+DATA_FILE_NAME = os.path.join(current_dir, '..', 'tests', 'fixtures', 'erai_data.nc')
 
 def isInteger(x):
     '''Check an input is integer
