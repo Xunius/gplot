@@ -17,7 +17,7 @@ from gplot.lib.base_utils import Plot2D, Plot2Quiver, rcParams
 
 class Plot2Basemap(Plot2D):
     '''2D geographical plotting class, using basemap'''
-    def __init__(self, var, method, xarray, yarray, ax=None, title=None,
+    def __init__(self, var, method, x, y, ax=None, title=None,
                  label_axes=True, axes_grid=False, legend=None, legend_ori=None,
                  clean=False, fontsize=None, projection=None, fill_color=None,
                  fix_aspect=False, isdrawcoastlines=True,
@@ -31,9 +31,9 @@ class Plot2Basemap(Plot2D):
                 For data with rank>2, take the slab from the last 2 dimensions.
             method (PlotMethod): plotting method. Determines how to plot.
                 Could be Isofill, Isoline, Boxfill, Quiver, Shading, Hatch, GIS.
-            xarray (1darray or None): array to use as the x-coordinates. If None,
+            x (1darray or None): array to use as the x-coordinates. If None,
                 use the indices of the last dimension: np.arange(slab.shape[-1]).
-            yarray (1darray or None): array to use as the y-coordinates. If None,
+            y (1darray or None): array to use as the y-coordinates. If None,
                 use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
         Keyword Args:
             ax (matplotlib axis or None): axis obj. Determines where to plot.
@@ -93,7 +93,7 @@ class Plot2Basemap(Plot2D):
         legend_ori = legend_ori or rcParams['legend_ori']
 
         Plot2D.__init__(
-            self, var, method, ax=ax, xarray=xarray, yarray=yarray,
+            self, var, method, ax=ax, x=x, y=y,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             legend=legend, legend_ori=legend_ori, clean=clean,
             fontsize=fontsize, fill_color=fill_color)
@@ -117,17 +117,17 @@ class Plot2Basemap(Plot2D):
 
         if self.projection in ['cyl', 'merc', 'cea']:
             bmap = Basemap(
-                projection=self.projection, llcrnrlat=self.yarray[0],
-                llcrnrlon=self.xarray[0],
-                urcrnrlat=self.yarray[-1],
-                urcrnrlon=self.xarray[-1],
+                projection=self.projection, llcrnrlat=self.y[0],
+                llcrnrlon=self.x[0],
+                urcrnrlat=self.y[-1],
+                urcrnrlon=self.x[-1],
                 ax=self.ax, fix_aspect=self.fix_aspect)
 
         elif self.projection in ['npaeqd', 'nplaea', 'npstere']:
 
-            self.var, self.xarray = addcyclic(self.var, self.xarray)
-            self.lons, self.lats = np.meshgrid(self.xarray, self.yarray)
-            lat_0 = np.min(self.yarray)-5
+            self.var, self.x = addcyclic(self.var, self.x)
+            self.lons, self.lats = np.meshgrid(self.x, self.y)
+            lat_0 = np.min(self.y)-5
             lon_0 = 180.
 
             bmap = Basemap(projection=self.projection,
@@ -136,9 +136,9 @@ class Plot2Basemap(Plot2D):
 
         elif self.projection in ['spaeqd', 'splaea', 'spstere']:
 
-            self.var, self.xarray = addcyclic(self.var, self.xarray)
-            self.lons, self.lats = np.meshgrid(self.xarray, self.yarray)
-            lat_0 = np.max(self.yarray)+5
+            self.var, self.x = addcyclic(self.var, self.x)
+            self.lons, self.lats = np.meshgrid(self.x, self.y)
+            lat_0 = np.max(self.y)+5
             lon_0 = 180.
             bmap = Basemap(projection=self.projection,
                            boundinglat=lat_0, lon_0=lon_0,
@@ -372,14 +372,14 @@ class Plot2Basemap(Plot2D):
             #1, 2, 2.5, 3, 4, 5, 6, 7, 8, 8.5, 9, 10])
                                 1, 2, 4, 5, 6, 8, 10])
         lat_labels = loclatlon.tick_values(
-            np.min(self.yarray), np.max(self.yarray))
+            np.min(self.y), np.max(self.y))
         lon_labels = loclatlon.tick_values(
-            np.min(self.xarray), np.max(self.xarray))
-        idx = np.where((lat_labels >= self.yarray[0]) & (
-            lat_labels <= self.yarray[-1]))
+            np.min(self.x), np.max(self.x))
+        idx = np.where((lat_labels >= self.y[0]) & (
+            lat_labels <= self.y[-1]))
         lat_labels = np.array(lat_labels)[idx]
-        idx = np.where((lon_labels >= self.xarray[0]) & (
-            lon_labels <= self.xarray[-1]))
+        idx = np.where((lon_labels >= self.x[0]) & (
+            lon_labels <= self.x[-1]))
         lon_labels = np.array(lon_labels)[idx]
 
         # -----------------Set axes labels-----------------
@@ -520,7 +520,7 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
     '''2D geographical quiver plotting class, using basemap'''
 
     def __init__(
-            self, u, v, method, xarray, yarray, ax=None,
+            self, u, v, method, x, y, ax=None,
             title=None, label_axes=True, axes_grid=False,
             clean=False, fontsize=None,
             projection=None,
@@ -536,9 +536,9 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
                 from the last 2 dimensions.
             method (Quiver obj): quiver plotting method. Determines how to plot
                 the quivers.
-            xarray (1darray or None): array to use as the x-coordinates. If None,
+            x (1darray or None): array to use as the x-coordinates. If None,
                 use the indices of the last dimension: np.arange(slab.shape[-1]).
-            yarray (1darray or None): array to use as the y-coordinates. If None,
+            y (1darray or None): array to use as the y-coordinates. If None,
                 use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
         Keyword Args:
             ax (matplotlib axis or None): axis obj. Determines where to plot.
@@ -602,13 +602,13 @@ class Plot2QuiverBasemap(Plot2Basemap, Plot2Quiver):
             units = getattr(u, 'units', None)
 
         Plot2Quiver.__init__(
-            self, u, v, method, ax=ax, xarray=xarray, yarray=yarray,
+            self, u, v, method, ax=ax, x=x, y=y,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             clean=clean, fontsize=fontsize, units=units, fill_color=fill_color,
             curve=curve)
 
         Plot2Basemap.__init__(
-            self, self.var, method, self.xarray, self.yarray, ax=ax,
+            self, self.var, method, self.x, self.y, ax=ax,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             legend=None, projection=projection, clean=clean, fontsize=fontsize,
             fill_color=fill_color, fix_aspect=fix_aspect,

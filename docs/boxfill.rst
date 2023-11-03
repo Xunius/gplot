@@ -18,8 +18,8 @@ All the input arguments to the ``__init__()`` method of
 
 * ``vars``
 * ``split``
-* ``min_level``
-* ``max_level``
+* ``vmin``
+* ``vmax``
 * ``ql``
 * ``qr``
 * ``vcenter``

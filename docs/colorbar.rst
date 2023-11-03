@@ -51,8 +51,8 @@ triangle. Namely, one chooses to selectively plot only a sub-range of the
 data values.
 
 Overflows are **ONLY** added if the range of data exceeds the range plotted.
-And they can be introduced by setting the ``min_level`` or ``ql`` arguments (for
-the left overflow), and the ``max_level`` or ``qr`` arguments (for the right
+And they can be introduced by setting the ``vmin`` or ``ql`` arguments (for
+the left overflow), and the ``vmax`` or ``qr`` arguments (for the right
 overflow).
 
 .. seealso::

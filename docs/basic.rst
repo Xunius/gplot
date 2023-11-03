@@ -93,7 +93,7 @@ Similarly, for a 2D quiver plot example:
     figure = plt.figure(figsize=(12, 10))
     ax = figure.add_subplot(111)
     q = gplot.Quiver(step=8)
-    pquiver = Plot2QuiverBasemap(u, v, q, xarray=lons, yarray=lats,
+    pquiver = Plot2QuiverBasemap(u, v, q, x=lons, y=lats,
         ax=ax, projection='cyl')
     pquiver.plot()
 
@@ -117,7 +117,7 @@ can use:
     figure = plt.figure(figsize=(12, 10))
     ax = figure.add_subplot(111)
     iso = gplot.Isofill(var)
-    gplot.plot2(var, iso, ax, xarray=lons, yarray=lats)
+    gplot.plot2(var, iso, ax, x=lons, y=lats)
     figure.show()
 
 And the 2nd example can be achieved using:
@@ -127,7 +127,7 @@ And the 2nd example can be achieved using:
     figure = plt.figure(figsize=(12, 10))
     ax = figure.add_subplot(111)
     q = gplot.Quiver(step=8)
-    gplot.plot2(u, q, ax, xarray=lons, yarray=lats, var_v=v,
+    gplot.plot2(u, q, ax, x=lons, y=lats, var_v=v,
         projection='cyl')
     figure.show()
 

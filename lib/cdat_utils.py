@@ -122,42 +122,42 @@ def readData(varid):
     fin.close()
     return var
 
-def checkGeomap(var, xarray, yarray):
+def checkGeomap(var, x, y):
     '''Check input args suitable for geo plot or not and do some preprocessing
 
     Args:
         var (TransientVariable): input N-d TransientVariable.
-        xarray (ndarray): 1d array, x-coordinates.
-        yarray (ndarray): 1d array, y-coordinates.
+        x (ndarray): 1d array, x-coordinates.
+        y (ndarray): 1d array, y-coordinates.
     Returns:
         isgeo (bool): True if inputs are suitable for geographical plot, False
             otherwise.
         var (TransientVariable): input <var> with latitude order reversed if
             needed.
         xx (ndarray): 1d array, use longitude axis of <var> if possible,
-            <xarray> otherwise
+            <x> otherwise
         yy (ndarray): 1d array, use latitude axis of <var> if possible,
-            <yarray> otherwise
+            <y> otherwise
     '''
 
 
     if isinstance(var, cdms.tvariable.TransientVariable) and \
             var.getLatitude() is not None and \
             var.getLongitude() is not None:
-        isgeo=True
+        isgeo = True
     elif isinstance(var, np.ndarray) and np.ndim(np.squeeze(var)) > 1\
-            and xarray is not None and yarray is not None:
-        isgeo=True
+            and x is not None and y is not None:
+        isgeo = True
     else:
-        isgeo=False
+        isgeo = False
 
     try:
         var = increasingLatitude(var)
-        yy=var.getLatitude()[:]
-        xx=var.getLongitude()[:]
+        yy = var.getLatitude()[:]
+        xx = var.getLongitude()[:]
     except:
-        xx=xarray
-        yy=yarray
+        xx = x
+        yy = y
 
     return isgeo, var, xx, yy
 

@@ -101,7 +101,7 @@ plot, and the subsequent quiver plot. E.g.
     q = gplot.Quiver(reso=5, scale=500)
 
     gplot.plot2(var1, iso, ax, projection='cyl')
-    gplot.plot2(u, q, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q, var_v=v, x=lons, y=lats,
                 ax=ax, title='quiver overlay', projection='cyl')
     figure.show()
 
@@ -141,7 +141,7 @@ A curved quiver plot is done by passing in ``curve=True``, e.g.:
     ax = figure.add_subplot(111)
     q = gplot.Quiver(step=8)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='curved quiver',
+        u, v, q, x=lons, y=lats, ax=ax, title='curved quiver',
         projection='cyl', curve=True)
     pquiver.plot()
 
@@ -174,7 +174,7 @@ The *mappable object* of a quiver plot is stored as an attribute of the
 ::
 
     >>> q = gplot.Quiver()
-    >>> pobj = Plot2QuiverBasemap(u, v, q, xarray=lons, yarray=lats, ax=ax, projection='cyl')
+    >>> pobj = Plot2QuiverBasemap(u, v, q, x=lons, y=lats, ax=ax, projection='cyl')
     >>> pobj.plot()
     >>> pobj.quiver
     <matplotlib.quiver.Quiver object at 0x7f2e03aed750>

@@ -9,8 +9,8 @@ import os
 import numpy as np
 from netCDF4 import Dataset
 
-current_dir, _=os.path.split(__file__)
-DATA_FILE_NAME=os.path.join(current_dir, '../tests/erai_data.nc')
+current_dir = os.path.dirname(__file__)
+DATA_FILE_NAME = os.path.join(current_dir, '../tests/erai_data.nc')
 
 def readData(varid):
     '''Read in a variable from an netcdf file
@@ -22,36 +22,36 @@ def readData(varid):
         ncvarNV (NCVAR): variable stored as an NCVAR obj.
     '''
 
-    fin=Dataset(DATA_FILE_NAME, 'r')
-    var=fin.variables[varid][:]
+    fin = Dataset(DATA_FILE_NAME, 'r')
+    var = fin.variables[varid][:]
 
     return var
 
 
-def checkGeomap(var, xarray, yarray):
+def checkGeomap(var, x, y):
     '''Check input args suitable for geo plot or not and do some preprocessing
 
     Args:
         var (TransientVariable): input N-d TransientVariable.
-        xarray (ndarray): 1d array, x-coordinates.
-        yarray (ndarray): 1d array, y-coordinates.
+        x (ndarray): 1d array, x-coordinates.
+        y (ndarray): 1d array, y-coordinates.
     Returns:
         isgeo (bool): True if inputs are suitable for geographical plot, False
             otherwise.
         var (TransientVariable): input <var> with latitude order reversed if
             needed.
         xx (ndarray): 1d array, use longitude axis of <var> if possible,
-            <xarray> otherwise
+            <x> otherwise
         yy (ndarray): 1d array, use latitude axis of <var> if possible,
-            <yarray> otherwise
+            <y> otherwise
     '''
 
 
     if isinstance(var, np.ndarray) and np.ndim(np.squeeze(var)) > 1\
-            and xarray is not None and yarray is not None:
-        isgeo=True
+            and x is not None and y is not None:
+        isgeo = True
     else:
-        isgeo=False
+        isgeo = False
 
-    return isgeo, var, xarray, yarray
+    return isgeo, var, x, y
 

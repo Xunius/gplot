@@ -80,7 +80,7 @@ using the following snippet:
    figure = plt.figure(figsize=(12, 10), dpi=100)
    ax = figure.add_subplot(111)
    iso = gplot.Isofill(var)
-   gplot.plot2(var, iso, ax, xarray=lons, yarray=lats,
+   gplot.plot2(var, iso, ax, x=lons, y=lats,
                title='Default basemap', projection='cyl',
                nc_interface='netcdf4')
    figure.show()

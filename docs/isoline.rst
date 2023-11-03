@@ -20,8 +20,8 @@ They share these arguments in their ``__init__()`` methods:
 * ``zero``
 * ``split``
 * ``levels``
-* ``min_level``
-* ``max_level``
+* ``vmin``
+* ``vmax``
 * ``ql``
 * ``qr``
 * ``vcenter``
@@ -116,7 +116,7 @@ therefore, the mappable object can be retrieved using:
 
 ::
 
-    >>> pobj = gplot.plot2(var, iso, ax, xarray=lons, yarray=lats)
+    >>> pobj = gplot.plot2(var, iso, ax, x=lons, y=lats)
     >>> pobj.cs
     <matplotlib.contour.QuadContourSet object at 0x7f0e3e6b4550>
 

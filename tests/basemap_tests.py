@@ -388,7 +388,7 @@ def test_basemap_quiver():
     ax = figure.add_subplot(111)
     q = gplot.Quiver()
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='default quiver',
+        u, v, q, x=lons, y=lats, ax=ax, title='default quiver',
         projection='cyl')
     pquiver.plot()
 
@@ -402,7 +402,7 @@ def test_basemap_quiver2():
     figure = plt.figure(figsize=(12, 10), dpi=100)
     ax = figure.add_subplot(111)
     q = gplot.Quiver()
-    gplot.plot2(u, q, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q, var_v=v, x=lons, y=lats,
                 ax=ax, title='default quiver', projection='cyl')
     figure.show()
 
@@ -415,7 +415,7 @@ def test_basemap_quiver3():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(step=8)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='curved quiver',
+        u, v, q, x=lons, y=lats, ax=ax, title='curved quiver',
         projection='cyl', curve=True)
     pquiver.plot()
 
@@ -430,7 +430,7 @@ def test_basemap_quiver_reso():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=10)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='quiver reso=10',
+        u, v, q, x=lons, y=lats, ax=ax, title='quiver reso=10',
         projection='cyl')
     pquiver.plot()
 
@@ -445,7 +445,7 @@ def test_basemap_quiver_scale():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax,
+        u, v, q, x=lons, y=lats, ax=ax,
         title='quiver step=5, scale=500', projection='cyl')
     pquiver.plot()
 
@@ -460,7 +460,7 @@ def test_basemap_quiver_scale_keylength():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500, keylength=20)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax,
+        u, v, q, x=lons, y=lats, ax=ax,
         title='quiver step=5, scale=500, keylength=20', projection='cyl')
     pquiver.plot()
 
@@ -474,19 +474,19 @@ def test_basemap_quiver_comparison():
                                       constrained_layout=True)
 
     q1 = gplot.Quiver()
-    gplot.plot2(u, q1, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q1, var_v=v, x=lons, y=lats,
                 ax=axes.flat[0], title='default quiver', projection='cyl')
 
     q2 = gplot.Quiver(step=8)
-    gplot.plot2(u, q2, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q2, var_v=v, x=lons, y=lats,
                 ax=axes.flat[1], title='step=8', projection='cyl')
 
     q3 = gplot.Quiver(reso=4)
-    gplot.plot2(u, q3, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q3, var_v=v, x=lons, y=lats,
                 ax=axes.flat[2], title='reso=4', projection='cyl')
 
     q4 = gplot.Quiver(reso=8)
-    gplot.plot2(u, q4, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q4, var_v=v, x=lons, y=lats,
                 ax=axes.flat[3], title='reso=8', projection='cyl')
 
     figure.show()
@@ -497,19 +497,19 @@ def test_basemap_quiver_comparison2():
                                       constrained_layout=True)
 
     q1 = gplot.Quiver(step=8, scale=None)
-    gplot.plot2(u, q1, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q1, var_v=v, x=lons, y=lats,
                 ax=axes.flat[0], title='step=8, scale=None', projection='cyl')
 
     q2 = gplot.Quiver(step=8, scale=200)
-    gplot.plot2(u, q2, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q2, var_v=v, x=lons, y=lats,
                 ax=axes.flat[1], title='step=8, scale=200', projection='cyl')
 
     q3 = gplot.Quiver(step=8, scale=500)
-    gplot.plot2(u, q3, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q3, var_v=v, x=lons, y=lats,
                 ax=axes.flat[2], title='step=8, scale=500', projection='cyl')
 
     q4 = gplot.Quiver(step=8, scale=500, keylength=20)
-    gplot.plot2(u, q4, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q4, var_v=v, x=lons, y=lats,
                 ax=axes.flat[3], title='step=8, scale=500, keylength=20', projection='cyl')
 
     figure.show()
@@ -523,7 +523,7 @@ def test_basemap_quiver_overlay():
     gplot.plot2(var1, iso, ax, projection='cyl')
 
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='quiver overlay',
+        u, v, q, x=lons, y=lats, ax=ax, title='quiver overlay',
         projection='cyl')
     pquiver.plot()
     figure.show()
@@ -539,7 +539,7 @@ def test_basemap_quiver_overlay2():
     iso = gplot.Isofill(var1)
     gplot.plot2(var1, iso, ax, projection='cyl')
 
-    gplot.plot2(u, q, var_v=v, xarray=lons, yarray=lats,
+    gplot.plot2(u, q, var_v=v, x=lons, y=lats,
                 ax=ax, title='quiver overlay', projection='cyl')
     figure.show()
 

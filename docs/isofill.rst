@@ -77,10 +77,10 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
   buffer zone in which the difference is not far from 0, and the plot will
   almost always end up being cleaner.
 
-* ``min_level``, ``max_level``, ``ql``, ``qr``: determine the lower and
+* ``vmin``, ``vmax``, ``ql``, ``qr``: determine the lower and
   upper bounds of the data range to plot.
 
-  ``min_level`` and ``max_level`` are used to specify the *absolute* bounds. If
+  ``vmin`` and ``vmax`` are used to specify the *absolute* bounds. If
   ``None`` (the default), these are taken from the minimum and maximum values
   from ``vars``.
 
@@ -90,8 +90,8 @@ constructor of :py:class:`base_utils.Isofill` are relevant:
   as the upper bound. These are useful for preventing some outliers from inflating
   the colorbar.
 
-  If both ``ql`` and ``min_level`` are given, whichever gives a greater absolute
-  value is chosen as the lower bound. Similarly for ``qr`` and ``max_level``.
+  If both ``ql`` and ``vmin`` are given, whichever gives a greater absolute
+  value is chosen as the lower bound. Similarly for ``qr`` and ``vmax``.
 
   .. note::
 
@@ -294,7 +294,7 @@ the mappable object can be retrieved using:
 
 ::
 
-    >>> pobj = gplot.plot2(var, iso, ax, xarray=lons, yarray=lats)
+    >>> pobj = gplot.plot2(var, iso, ax, x=lons, y=lats)
     >>> pobj.cs
     <matplotlib.contour.QuadContourSet object at 0x7f0e3e6b4550>
 

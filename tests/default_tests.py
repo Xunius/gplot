@@ -31,7 +31,7 @@ def test_plot2d_isofill_overflow():
 
     figure=plt.figure(figsize=(12,10),dpi=100)
     ax=figure.add_subplot(111)
-    iso=gplot.Isofill(var1, num=10, zero=1, split=1, min_level=11000, qr=0.01)
+    iso=gplot.Isofill(var1, num=10, zero=1, split=1, vmin=11000, qr=0.01)
     gplot.plot2(var1, iso, ax, title='Isofill with overflows')
     figure.show()
 

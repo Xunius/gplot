@@ -17,7 +17,7 @@ The signature of the main plotting interfacing function is:
 
 ```
 from gplot import plot2
-plot2(var, method, ax, xarray=x, yarray=y)
+plot2(var, method, ax, x=x, y=y)
 ```
 
 where:
@@ -26,7 +26,7 @@ where:
 * `method` is a plotting method object, how to plot, e.g. `Isofill` which is
 `contourf`, `Boxfill` which is `imshow`, `Quiver` which is `quiver` plots.
 * `ax`: `matplotlib.Axes` object, where to plot.
-* `xarray` and `yarray`: x- and y- coordinate.
+* `x` and `y`: x- and y- coordinate.
 
 
 # Examples
@@ -38,7 +38,7 @@ import gplot
 figure = plt.figure(figsize=(12, 10), dpi=100)
 ax = figure.add_subplot(111)
 iso = gplot.Isofill(var)
-gplot.plot2(var, iso, ax, xarray=lons, yarray=lats,
+gplot.plot2(var, iso, ax, x=lons, y=lats,
 	title='Default basemap', projection='cyl',
 	nc_interface='netcdf4')
 figure.show()
@@ -68,9 +68,9 @@ import gplot
 figure = plt.figure(figsize=(12, 10), dpi=100)
 ax = figure.add_subplot(111)
 iso = gplot.Isofill(var, num=10, zero=1, split=1,
-                    min_level=11000, qr=0.01)
+                    vmin=11000, qr=0.01)
 gplot.plot2(
-    var, iso, ax, xarray=lons, yarray=lats,
+    var, iso, ax, x=lons, y=lats,
     title='Isofill with overflows', projection='cyl',
     nc_interface='netcdf4')
 figure.show()
@@ -85,7 +85,7 @@ where:
 * `num = 10` specifies the desired number of contourf levels.
 * `zero = 1`: 0 is allowed to be one of the contourf levels.
 * `split = 1`: split a divergence colorbar if the plotted data has both positive and negative values.
-* `min_level = 11000`: desired minimum level of the contourf levels.
+* `vmin = 11000`: desired minimum level of the contourf levels.
 * `qr = 0.01`: desired maximum level of the contourf levels, specified by the 0.01 right quantile.
 
 

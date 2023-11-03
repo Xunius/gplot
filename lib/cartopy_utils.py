@@ -12,7 +12,7 @@ from gplot.lib.base_utils import Plot2D, Plot2Quiver
 
 
 class Plot2Cartopy(Plot2D):
-    def __init__(self, var, method, xarray, yarray, ax=None,
+    def __init__(self, var, method, x, y, ax=None,
                  title=None, label_axes=True, axes_grid=False,
                  legend='global', legend_ori='horizontal',
                  clean=False, fontsize=12, projection='cyl', transform=None,
@@ -21,29 +21,32 @@ class Plot2Cartopy(Plot2D):
                  isfillcontinents=False):
 
         Plot2D.__init__(
-            self, var, method, ax=ax, xarray=xarray, yarray=yarray,
+            self, var, method, ax=ax, x=x, y=y,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             legend=legend, legend_ori=legend_ori, clean=clean,
             fontsize=fontsize, fill_color=fill_color)
 
-        self.projection=projection
-        self.transform=transform
-        self._projection=self.getProjectionNTransform(projection)
-        self._transform=self.getProjectionNTransform(transform)
-        self.ax.projection=self._projection
+        self.projection       = projection
+        self.transform        = transform
+        self._projection      = self.getProjectionNTransform(projection)
+        self._transform       = self.getProjectionNTransform(transform)
+        self.ax.projection    = self._projection
 
-        self.fix_aspect=fix_aspect
-        self.isdrawcoastlines=isdrawcoastlines
-        self.isdrawcountries=isdrawcountries
-        self.isdrawcontinents=isdrawcontinents
-        self.isfillcontinents=isfillcontinents
-        self.isdrawrivers=isdrawrivers
+        self.fix_aspect       = fix_aspect
+        self.isdrawcoastlines = isdrawcoastlines
+        self.isdrawcountries  = isdrawcountries
+        self.isdrawcontinents = isdrawcontinents
+        self.isfillcontinents = isfillcontinents
+        self.isdrawrivers     = isdrawrivers
 
         try:
-            self.var, self.xarray = add_cyclic_point(self.var, self.xarray)
-            self.lons, self.lats = np.meshgrid(self.xarray, self.yarray)
+            self.var, self.x = add_cyclic_point(self.var, self.x)
+            self.lons, self.lats = np.meshgrid(self.x, self.y)
         except:
             pass
+
+        if not self.fix_aspect:
+            self.ax.set_aspect('auto')
 
     def getProjectionNTransform(self, proj):
 
@@ -51,8 +54,8 @@ class Plot2Cartopy(Plot2D):
             result=proj
         elif isinstance(proj, str):
             if proj == 'cyl':
-                xarray = np.array(self.xarray)
-                lon0 = xarray[len(xarray)//2]
+                x = np.array(self.x)
+                lon0 = x[len(x)//2]
                 result = ccrs.PlateCarree(central_longitude=lon0)
         elif proj is None:
                 result = ccrs.PlateCarree()
@@ -89,7 +92,7 @@ class Plot2Cartopy(Plot2D):
             # TODO: add docstring for this
             parallels,meridians=self.label_axes
         else:
-            parallels,meridians=self.getLabelBool(self.geo, self.subidx)
+            parallels,meridians=self.getLabelBool()
 
         self.gridliner = self.ax.gridlines(
             draw_labels=True, color=self.fill_color)
@@ -129,7 +132,7 @@ class Plot2Cartopy(Plot2D):
 
 class Plot2QuiverCartopy(Plot2Cartopy, Plot2Quiver):
 
-    def __init__(self, u, v, method, xarray, yarray, ax=None,
+    def __init__(self, u, v, method, x, y, ax=None,
                  title=None, label_axes=True, axes_grid=False,
                  legend='global', legend_ori='horizontal',
                  units=None,
@@ -149,12 +152,14 @@ class Plot2QuiverCartopy(Plot2Cartopy, Plot2Quiver):
             units=getattr(u, 'units', None)
 
         Plot2Quiver.__init__(
-            self, u, v, method, ax=ax, xarray=xarray, yarray=yarray,
+            self, u, v, method, ax=ax, x=x, y=y,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             clean=clean, fontsize=fontsize, units=units, fill_color=fill_color)
 
+        x_old = self.x.copy()
+
         Plot2Cartopy.__init__(
-            self, self.var, method, self.xarray, self.yarray, ax=ax,
+            self, self.var, method, self.x, self.y, ax=ax,
             title=title, label_axes=label_axes, axes_grid=axes_grid,
             legend=None,
             projection=projection, transform=transform,
@@ -164,6 +169,7 @@ class Plot2QuiverCartopy(Plot2Cartopy, Plot2Quiver):
             isdrawrivers=isdrawrivers,
             isfillcontinents=isfillcontinents)
 
+        self.v, _ = add_cyclic_point(self.v, x_old)
 
     def plot(self):
         self.quiver = self._plot()

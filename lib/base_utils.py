@@ -50,22 +50,23 @@ __all__=[
 
 # Default parameters
 rcParams = {
-    'legend': 'global',
-    'title': None,
-    'label_axes': True,
-    'axes_grid': False,
-    'fill_color': '0.8',
-    'projection': 'cyl',
-    'legend_ori': 'horizontal',
-    'clean': False,
-    'bmap': None,
-    'isgeomap': True,
-    'fix_aspect': False,
-    'nc_interface': 'cdat',
-    'geo_interface': 'basemap',
-    'fontsize': 11,
-    'verbose': True,
-    'default_cmap': plt.cm.RdBu_r
+    'legend'        : 'global',
+    'title'         : None,
+    'label_axes'    : True,
+    'axes_grid'     : False,
+    'fill_color'    : '0.8',
+    'projection'    : 'cyl',
+    'legend_ori'    : 'horizontal',
+    'clean'         : False,
+    'bmap'          : None,
+    'isgeomap'      : True,
+    'fix_aspect'    : False,
+    #'nc_interface' : 'cdat',
+    'nc_interface'  : 'netcdf4',
+    'geo_interface' : 'basemap',
+    'fontsize'      : 11,
+    'verbose'       : True,
+    'default_cmap'  : plt.cm.RdBu_r
 }
 
 # a backup copy, deepcopy produces issue in autodoc
@@ -82,7 +83,7 @@ _default_rcParams = {
     'isgeomap': True,
     'fix_aspect': False,
     'nc_interface': 'cdat',
-    'geo_interface': 'basemap',
+    'geo_interface': 'cartopy',
     'fontsize': 11,
     'verbose': True,
     'default_cmap': plt.cm.RdBu_r
@@ -99,6 +100,15 @@ def restoreParams():
     '''Restore default parameters'''
     global rcParams
     rcParams.update(_default_rcParams)
+
+
+def update_kwarg(key, value):
+    global rcParams
+    if value is None or value == 'none':
+        return rcParams.get(key, None)
+    else:
+        return value
+
 
 
 def mkscale(n1, n2, nc=12, zero=1):
@@ -533,11 +543,16 @@ def getSlab(var, index1=-1, index2=-2, verbose=True):
     slicer[index1] = slice(None)
     slicer[index2] = slice(None)
     result = var[tuple(slicer)]
+    '''
     try:
         result = np.squeeze(result)
     except:
         result = result(squeeze=1)
     return np.array(result)
+    '''
+
+    return result[0]
+
 
 
 def regridToReso(var, inlat, inlon, dlat, dlon, lat_idx=-2, lon_idx=-1,
@@ -694,15 +709,14 @@ def getQuantiles(slab, quantiles=None, verbose=True):
     return results
 
 
-def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
-             verbose=True):
+def getRange(vars, vmin=None, vmax=None, ql=None, qr=None, verbose=True):
     '''Get min/max value
 
     Args:
         vars (list): a list of ndarrays.
     Keyword Args:
-        min_level (None or float): given minimum level.
-        max_level (None or float): given maximum level.
+        vmin (None or float): given minimum level.
+        vmax (None or float): given maximum level.
         ql (None or float): given left quantile.
         qr (None or float): given right quantile.
     Returns:
@@ -734,22 +748,22 @@ def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
     data_max = np.nanmax(var_all)
 
     # ----------------Set lower boundary----------------
-    if min_level is not None and ql is None:
-        vmin = max(data_min, min_level)
-    elif min_level is None and ql is not None:
+    if vmin is not None and ql is None:
+        vmin = max(data_min, vmin)
+    elif vmin is None and ql is not None:
         vmin = left_quantile
-    elif min_level is not None and ql is not None:
-        vmin = max(data_min, min_level, left_quantile)
+    elif vmin is not None and ql is not None:
+        vmin = max(data_min, vmin, left_quantile)
     else:
         vmin = data_min
 
     # ----------------Set upper boundary----------------
-    if max_level is not None and qr is None:
-        vmax = min(data_max, max_level)
-    elif max_level is None and qr is not None:
+    if vmax is not None and qr is None:
+        vmax = min(data_max, vmax)
+    elif vmax is None and qr is not None:
         vmax = right_quantile
-    elif max_level is not None and qr is not None:
-        vmax = min(data_max, max_level, right_quantile)
+    elif vmax is not None and qr is not None:
+        vmax = min(data_max, vmax, right_quantile)
     else:
         vmax = data_max
 
@@ -757,6 +771,7 @@ def getRange(vars, min_level=None, max_level=None, ql=None, qr=None,
         vmin, vmax = vmax, vmin
 
     return vmin, vmax, data_min, data_max
+
 
 def alternateTicks(cbar, ticks=None, fontsize=9):
     '''Create alternating ticks and ticklabels for colorbar
@@ -831,6 +846,26 @@ def alternateTicks(cbar, ticks=None, fontsize=9):
                      ha='center', fontsize=fontsize)
 
     return cbar
+
+
+def get_ax_geometry(ax):
+    '''
+    The get_geometry function was deprecated in Matplotlib 3.4 and will be
+    removed two minor releases later. Use get_subplotspec instead.
+    (get_subplotspec returns a SubplotSpec instance.)
+    '''
+
+    mpl_version = matplotlib.__version__.split('.')[:2]
+    if mpl_version < ['3', '4']:
+        spec = ax.get_geometry()
+        geo = spec[:2]
+        subidx = spec[-1]
+    else:
+        spec = ax.get_subplotspec().get_geometry()
+        geo = spec[:2]
+        subidx = spec[2] + 1
+
+    return geo, subidx
 
 # -----------------------------------------------------------------------
 # -                       Plotting method classes                       -
@@ -911,7 +946,7 @@ class TwoSlopeNorm(Normalize):
 
 class PlotMethod(object):
     '''Base plotting method class'''
-    def __init__(self, vars, split=2, min_level=None, max_level=None,
+    def __init__(self, vars, split=2, vmin=None, vmax=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
         '''Base plotting method class
 
@@ -931,18 +966,18 @@ class PlotMethod(object):
                 If split and data range on 1 side of <vcenter>, will only use
                 only half of the colormap range, depending on whether data
                 are on which side of <vcenter>.
-            min_level (float or None): specified minimum level to plot. If None,
-                determine from <ql> if given. If both <min_level> and <ql> are
+            vmin (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
-            max_level (float or None): specified maximum level to plot. If None,
-                determine from <qr> if given. If both <max_level> and <qr> are
+            vmax (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             ql (float or None): specified minimum left quantile to plot. If None,
-                determine from <min_level> if given. If both <min_level> and <ql> are
+                determine from <vmin> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
             qr (float or None): specified maximum right quantile (e.g. 0.01 for
                 the 99th percentile) to plot. If None,
-                determine from <max_level> if given. If both <max_level> and <qr> are
+                determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
             cmap (matplotlib colormap or None): colormap to use. If None, use
@@ -950,14 +985,14 @@ class PlotMethod(object):
             verbose (bool): whether to print some info or not.
         '''
 
-        self.split = split
-        self.min_level = min_level
-        self.max_level = max_level
-        self.ql = ql
-        self.qr = qr
+        self.split   = split
+        self.vmin    = vmin
+        self.vmax    = vmax
+        self.ql      = ql
+        self.qr      = qr
         self.vcenter = vcenter
-        self.cmap = cmap
-        self.method = 'base'
+        self.cmap    = cmap
+        #self.method  = 'base'
 
         if split not in [0, 1, 2]:
             raise Exception("<split> not in [0,1,2].")
@@ -977,13 +1012,22 @@ class PlotMethod(object):
 
         # -------------------Get max/min-------------------
         self.vmin, self.vmax, self.data_min, self.data_max = getRange(
-            self.vars, self.min_level, self.max_level, self.ql, self.qr)
+            self.vars, self.vmin, self.vmax, self.ql, self.qr)
 
     def computeExt(self, vmin, vmax):
         '''Determine overflow on both ends'''
 
         self.ext_1 = True if self.data_min < vmin else False
         self.ext_2 = True if self.data_max > vmax else False
+
+        if self.ext_1 is False and self.ext_2 is False:
+            self.extend = 'neither'
+        elif self.ext_1 is True and self.ext_2 is False:
+            self.extend = 'min'
+        elif self.ext_1 is False and self.ext_2 is True:
+            self.extend = 'max'
+        else:
+            self.extend = 'both'
 
         return
 
@@ -1033,8 +1077,10 @@ class PlotMethod(object):
 
 class Isofill(PlotMethod):
     '''Plotting method for isofill/contourf plots'''
+
+    method: str = 'isofill'
     def __init__(self, vars, num=15, zero=1, split=1, levels=None,
-                 min_level=None, max_level=None, ql=None, qr=None,
+                 vmin=None, vmax=None, ql=None, qr=None,
                  vcenter=0, cmap=None,
                  stroke=False, stroke_color='0.3', stroke_lw=0.2,
                  stroke_linestyle='-',
@@ -1062,20 +1108,20 @@ class Isofill(PlotMethod):
                 only half of the colormap range, depending on whether data
                 are on which side of <vcenter>.
             levels (list, tuple or 1darray): specified contour levels. If not
-                given, compute contour levels using <num>, <zero>, <min_level>,
-                <max_level>, <ql>, <qr>.
-            min_level (float or None): specified minimum level to plot. If None,
-                determine from <ql> if given. If both <min_level> and <ql> are
+                given, compute contour levels using <num>, <zero>, <vmin>,
+                <vmax>, <ql>, <qr>.
+            vmin (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
-            max_level (float or None): specified maximum level to plot. If None,
-                determine from <qr> if given. If both <max_level> and <qr> are
+            vmax (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             ql (float or None): specified minimum left quantile to plot. If None,
-                determine from <min_level> if given. If both <min_level> and <ql> are
+                determine from <vmin> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
             qr (float or None): specified maximum right quantile (e.g. 0.01 for
                 the 99th percentile) to plot. If None,
-                determine from <max_level> if given. If both <max_level> and <qr> are
+                determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
             cmap (matplotlib colormap or None): colormap to use. If None, use
@@ -1091,19 +1137,17 @@ class Isofill(PlotMethod):
             verbose (bool): whether to print some info or not.
         '''
 
-        super(
-            Isofill, self).__init__(
-            vars, split=split, min_level=min_level, max_level=max_level, ql=ql,
+        super(Isofill, self).__init__(
+            vars, split=split, vmin=vmin, vmax=vmax, ql=ql,
             qr=qr, vcenter=vcenter, cmap=cmap, verbose=verbose)
 
-        self.num = num
-        self.zero = zero
-        self.levels = levels
-        self.stroke = stroke
-        self.stroke_color = stroke_color
-        self.stroke_lw = stroke_lw
+        self.num              = num
+        self.zero             = zero
+        self.levels           = levels
+        self.stroke           = stroke
+        self.stroke_color     = stroke_color
+        self.stroke_lw        = stroke_lw
         self.stroke_linestyle = stroke_linestyle
-        self.method = 'isofill'
 
         # --------------------Get levels--------------------
         self.computeRange()
@@ -1117,17 +1161,16 @@ class Isofill(PlotMethod):
         self.cmap = getColormap(self.cmap)
         self.cmap, self.norm = self.adjustColormap(vmin=np.min(self.levels),
                                                    vmax=np.max(self.levels))
-        # self.cmap = LinearSegmentedColormap('new_cmp2',
-        # self.cmap._segmentdata,
-        # N=len(self.levels)-1)
 
         return
 
 
 class Isoline(Isofill):
     '''Plotting method for isoline/contour plots'''
+    method: str = 'isoline'
+
     def __init__(self, vars, num=15, zero=1, split=1, levels=None,
-                 min_level=None, max_level=None, ql=None, qr=None,
+                 vmin=None, vmax=None, ql=None, qr=None,
                  vcenter=0, cmap=None,
                  black=False, color=None, linewidth=1.0, alpha=1.0,
                  dash_negative=True, bold_lines=None,
@@ -1156,20 +1199,20 @@ class Isoline(Isofill):
                 only half of the colormap range, depending on whether data
                 are on which side of <vcenter>.
             levels (list, tuple or 1darray): specified contour levels. If not
-                given, compute contour levels using <num>, <zero>, <min_level>,
-                <max_level>, <ql>, <qr>.
-            min_level (float or None): specified minimum level to plot. If None,
-                determine from <ql> if given. If both <min_level> and <ql> are
+                given, compute contour levels using <num>, <zero>, <vmin>,
+                <vmax>, <ql>, <qr>.
+            vmin (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
-            max_level (float or None): specified maximum level to plot. If None,
-                determine from <qr> if given. If both <max_level> and <qr> are
+            vmax (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             ql (float or None): specified minimum left quantile to plot. If None,
-                determine from <min_level> if given. If both <min_level> and <ql> are
+                determine from <vmin> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
             qr (float or None): specified maximum right quantile (e.g. 0.01 for
                 the 99th percentile) to plot. If None,
-                determine from <max_level> if given. If both <max_level> and <qr> are
+                determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
             cmap (matplotlib colormap or None): colormap to use. If None, use
@@ -1193,22 +1236,20 @@ class Isoline(Isofill):
             verbose (bool): whether to print some info or not.
         '''
 
-        super(
-            Isoline, self).__init__(
+        super(Isoline, self).__init__(
             vars, num=num, zero=zero, split=split, levels=levels,
-            min_level=min_level, max_level=max_level, ql=ql, qr=qr,
+            vmin=vmin, vmax=vmax, ql=ql, qr=qr,
             vcenter=vcenter, cmap=cmap, verbose=verbose)
 
-        self.black = black
-        self.color = color
-        self.linewidth = linewidth
-        self.alpha = alpha
-        self.dash_negative = dash_negative
-        self.bold_lines = bold_lines
-        self.method = 'isoline'
-        self.label = label
-        self.label_fmt = label_fmt
-        self.label_box = label_box
+        self.black           = black
+        self.color           = color
+        self.linewidth       = linewidth
+        self.alpha           = alpha
+        self.dash_negative   = dash_negative
+        self.bold_lines      = bold_lines
+        self.label           = label
+        self.label_fmt       = label_fmt
+        self.label_box       = label_box
         self.label_box_color = label_box_color
 
         return
@@ -1216,7 +1257,9 @@ class Isoline(Isofill):
 
 class Boxfill(PlotMethod):
     '''Plotting method for boxfill/imshow plots'''
-    def __init__(self, vars, split=2, min_level=None, max_level=None,
+
+    method: str = 'boxfill'
+    def __init__(self, vars, split=2, vmin=None, vmax=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
         '''Plotting method for boxfill/imshow plots
 
@@ -1237,20 +1280,20 @@ class Boxfill(PlotMethod):
                 only half of the colormap range, depending on whether data
                 are on which side of <vcenter>.
             levels (list, tuple or 1darray): specified contour levels. If not
-                given, compute contour levels using <num>, <zero>, <min_level>,
-                <max_level>, <ql>, <qr>.
-            min_level (float or None): specified minimum level to plot. If None,
-                determine from <ql> if given. If both <min_level> and <ql> are
+                given, compute contour levels using <num>, <zero>, <vmin>,
+                <vmax>, <ql>, <qr>.
+            vmin (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
-            max_level (float or None): specified maximum level to plot. If None,
-                determine from <qr> if given. If both <max_level> and <qr> are
+            vmax (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             ql (float or None): specified minimum left quantile to plot. If None,
-                determine from <min_level> if given. If both <min_level> and <ql> are
+                determine from <vmin> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
             qr (float or None): specified maximum right quantile (e.g. 0.01 for
                 the 99th percentile) to plot. If None,
-                determine from <max_level> if given. If both <max_level> and <qr> are
+                determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
             cmap (matplotlib colormap or None): colormap to use. If None, use
@@ -1258,12 +1301,9 @@ class Boxfill(PlotMethod):
             verbose (bool): whether to print some info or not.
         '''
 
-        super(
-            Boxfill, self).__init__(
-            vars, split=split, min_level=min_level, max_level=max_level, ql=ql,
+        super(Boxfill, self).__init__(
+            vars, split=split, vmin=vmin, vmax=vmax, ql=ql,
             qr=qr, vcenter=vcenter, cmap=cmap, verbose=verbose)
-
-        self.method = 'boxfill'
 
         self.computeRange()
         self.computeExt(self.vmin, self.vmax)
@@ -1273,7 +1313,9 @@ class Boxfill(PlotMethod):
 
 class Pcolor(Boxfill):
     '''Plotting method for pcolormesh plots'''
-    def __init__(self, vars, split=2, min_level=None, max_level=None,
+
+    method: str = 'pcolor'
+    def __init__(self, vars, split=2, vmin=None, vmax=None,
                  ql=None, qr=None, vcenter=0, cmap=None, verbose=True):
         '''Plotting method for pcolormesh plots
 
@@ -1294,20 +1336,20 @@ class Pcolor(Boxfill):
                 only half of the colormap range, depending on whether data
                 are on which side of <vcenter>.
             levels (list, tuple or 1darray): specified contour levels. If not
-                given, compute contour levels using <num>, <zero>, <min_level>,
-                <max_level>, <ql>, <qr>.
-            min_level (float or None): specified minimum level to plot. If None,
-                determine from <ql> if given. If both <min_level> and <ql> are
+                given, compute contour levels using <num>, <zero>, <vmin>,
+                <vmax>, <ql>, <qr>.
+            vmin (float or None): specified minimum level to plot. If None,
+                determine from <ql> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
-            max_level (float or None): specified maximum level to plot. If None,
-                determine from <qr> if given. If both <max_level> and <qr> are
+            vmax (float or None): specified maximum level to plot. If None,
+                determine from <qr> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             ql (float or None): specified minimum left quantile to plot. If None,
-                determine from <min_level> if given. If both <min_level> and <ql> are
+                determine from <vmin> if given. If both <vmin> and <ql> are
                 None, use minimum value from <vars>. If both given, take the larger.
             qr (float or None): specified maximum right quantile (e.g. 0.01 for
                 the 99th percentile) to plot. If None,
-                determine from <max_level> if given. If both <max_level> and <qr> are
+                determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
             cmap (matplotlib colormap or None): colormap to use. If None, use
@@ -1315,16 +1357,16 @@ class Pcolor(Boxfill):
             verbose (bool): whether to print some info or not.
         '''
 
-        super(
-            Pcolor, self).__init__(
-            vars, split=split, min_level=min_level, max_level=max_level, ql=ql,
+        super(Pcolor, self).__init__(
+            vars, split=split, vmin=vmin, vmax=vmax, ql=ql,
             qr=qr, vcenter=vcenter, cmap=cmap, verbose=verbose)
 
-        self.method = 'pcolor'
 
 
 class Hatch(object):
     '''Plotting method for hatching plots'''
+    method: str = 'hatch'
+
     def __init__(self, hatch='.', color='k', alpha=1.0):
         '''Plotting method for hatching plots
 
@@ -1336,11 +1378,12 @@ class Hatch(object):
         self.hatch = hatch
         self.color = color
         self.alpha = alpha
-        self.method = 'hatch'
 
 
 class Shading(object):
     '''Plotting method for shading plots'''
+    method: str = 'shading'
+
     def __init__(self, color='0.5', alpha=0.5):
         '''Plotting method for shading plots
 
@@ -1351,7 +1394,6 @@ class Shading(object):
 
         self.color = color
         self.alpha = alpha
-        self.method = 'shading'
 
         cdict = {'red': [(0, 1, 1), ],
                  'green': [(0, 1, 1), ],
@@ -1371,6 +1413,8 @@ class Shading(object):
 
 class GIS(object):
     '''Plotting method for GIS plots'''
+    method: str = 'gis'
+
     def __init__(self, xpixels=2000, dpi=96, verbose=True):
         '''Plotting method for GIS plots
 
@@ -1380,14 +1424,15 @@ class GIS(object):
             verbose (bool): whats this?
         '''
         self.xpixels = xpixels
-        self.dpi = dpi
+        self.dpi     = dpi
         self.verbose = verbose
-        self.args = {'xpixels': xpixels, 'dpi': dpi, 'verbose': verbose}
-        self.method = 'gis'
+        self.args    = {'xpixels': xpixels, 'dpi': dpi, 'verbose': verbose}
 
 
 class Quiver(object):
     '''Plotting method for quiver plots'''
+    method: str = 'quiver'
+
     def __init__(self, step=1, reso=None, scale=None, keylength=None,
                  linewidth=0.0015, color='k', alpha=1.0):
         '''Plotting method for quiver plots
@@ -1406,14 +1451,13 @@ class Quiver(object):
             alpha (float): transparent level in [0, 1].
         '''
 
-        self.method = 'quiver'
-        self.step = step
-        self.reso = reso
-        self.scale = scale
+        self.step      = step
+        self.reso      = reso
+        self.scale     = scale
         self.keylength = keylength
         self.linewidth = linewidth
-        self.color = color
-        self.alpha = alpha
+        self.color     = color
+        self.alpha     = alpha
 
 
 # -----------------------------------------------------------------------
@@ -1428,7 +1472,7 @@ class Plot2D(object):
     which handles equivalent plotting with geographical map projections.
     '''
 
-    def __init__(self, var, method, ax=None, xarray=None, yarray=None,
+    def __init__(self, var, method, ax=None, x=None, y=None,
                  title=None, label_axes=True, axes_grid=False, legend='global',
                  legend_ori='horizontal', clean=False, fontsize=None,
                  fill_color=None):
@@ -1442,9 +1486,9 @@ class Plot2D(object):
         Keyword Args:
             ax (matplotlib axis or None): axis obj. Determines where to plot.
                 If None, create a new.
-            xarray (1darray or None): array to use as the x-coordinates. If None,
+            x (1darray or None): array to use as the x-coordinates. If None,
                 use the indices of the last dimension: np.arange(slab.shape[-1]).
-            yarray (1darray or None): array to use as the y-coordinates. If None,
+            y (1darray or None): array to use as the y-coordinates. If None,
                 use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
             title (str or None): text as the figure title if <ax> is the
                 single plot in the figure. If None, automatically
@@ -1484,6 +1528,7 @@ class Plot2D(object):
         '''
 
         # get kwargs
+        '''
         fill_color = fill_color or rcParams['fill_color']
         #title = title or rcParams['title']
         label_axes = label_axes or rcParams['label_axes']
@@ -1492,20 +1537,28 @@ class Plot2D(object):
         clean = clean or rcParams['clean']
         #legend = legend or rcParams['legend']
         legend_ori = legend_ori or rcParams['legend_ori']
+        '''
+        fill_color = update_kwarg('fill_color' , fill_color)
+        title      = update_kwarg('title'      , title)
+        label_axes = update_kwarg('label_axes' , label_axes)
+        axes_grid  = update_kwarg('axes_grid'  , axes_grid)
+        fontsize   = update_kwarg('fontsize'   , fontsize)
+        clean      = update_kwarg('clean'      , clean)
+        legend_ori = update_kwarg('legend_ori' , legend_ori)
 
-        self.var = var
-        self.method = method
-        self.ax = ax or plt.subplot(111)
-        self.xarray = xarray
-        self.yarray = yarray
+        self.var        = var
+        self.method     = method
+        self.ax         = ax or plt.subplot(111)
+        self.x          = x
+        self.y          = y
 
-        self.title = str(title)
+        self.title      = str(title)
         self.label_axes = label_axes
-        self.axes_grid = axes_grid
-        self.legend = legend
+        self.axes_grid  = axes_grid
+        self.legend     = legend
         self.legend_ori = legend_ori
-        self.clean = clean
-        self.fontsize = fontsize
+        self.clean      = clean
+        self.fontsize   = fontsize
         self.fill_color = fill_color
 
         self._transform = None  # to be overwriten by Plot2Cartopy
@@ -1514,13 +1567,13 @@ class Plot2D(object):
         self.var = getSlab(self.var)
 
         # ---------------------Get grid---------------------
-        self.xarray, self.yarray, self.lons, self.lats = self.getGrid()
+        self.x, self.y, self.lons, self.lats = self.getGrid()
 
         # ---------------Get geo and fontsize---------------
         self.geo, self.subidx, self._fontsize = self.getGeo()
 
         # Store a singleton record to avoid the ax.get_geometry() result
-        # get changes after creating a local colorbar:
+        # get changed after creating a local colorbar:
         if not hasattr(self.ax, '_gplot_geo'):
             self.ax._gplot_geo = self.geo + (self.subidx,)
 
@@ -1530,30 +1583,30 @@ class Plot2D(object):
         '''Get x- and y- coordnates
 
         Returns:
-            xarray (1darray): 1d array of the x-coordinates.
-            yarray (1darray): 1d array of the y-coordinates.
+            x (1darray): 1d array of the x-coordinates.
+            y (1darray): 1d array of the y-coordinates.
             lons,lats (ndarray): 2d array of the x- and y- coordinates, as
-                created from `lons, lats = np.meshgrid(xarray, yarray)`.
+                created from `lons, lats = np.meshgrid(x, y)`.
         '''
 
-        if self.yarray is None:
-            yarray = np.arange(self.var.shape[0])
+        if self.y is None:
+            y = np.arange(self.var.shape[0])
         else:
-            yarray = np.array(self.yarray)
+            y = np.array(self.y)
 
-        if self.xarray is None:
-            xarray = np.arange(self.var.shape[1])
+        if self.x is None:
+            x = np.arange(self.var.shape[1])
         else:
-            xarray = np.array(self.xarray)
+            x = np.array(self.x)
 
-        if len(yarray) != self.var.shape[0]:
+        if len(y) != self.var.shape[0]:
             raise Exception("X-axis dimention does not match")
-        if len(xarray) != self.var.shape[1]:
+        if len(x) != self.var.shape[1]:
             raise Exception("Y-axis dimention does not match")
 
-        lons, lats = np.meshgrid(xarray, yarray)
+        lons, lats = np.meshgrid(x, y)
 
-        return xarray, yarray, lons, lats
+        return x, y, lons, lats
 
     def getGeo(self):
         '''Get geometry layout of the axis and font size
@@ -1568,8 +1621,9 @@ class Plot2D(object):
         '''
 
         if not hasattr(self.ax, '_gplot_geo'):
-            geo = self.ax.get_geometry()[:2]
-            subidx = self.ax.get_geometry()[-1]
+            #geo = self.ax.get_geometry()[:2]
+            #subidx = self.ax.get_geometry()[-1]
+            geo, subidx = get_ax_geometry(self.ax)
         else:
             geo = self.ax._gplot_geo[:2]
             subidx = self.ax._gplot_geo[-1]
@@ -1578,25 +1632,6 @@ class Plot2D(object):
 
         return geo, subidx, fontsize
 
-    @classmethod
-    def getExtend(cls, method):
-        '''Get colorbar overflow on both ends
-
-        Returns:
-            extend (str): 'both', 'min', 'max' or 'neither'. Determined
-                from the method obj.
-        '''
-
-        if method.ext_1 is False and method.ext_2 is False:
-            extend = 'neither'
-        elif method.ext_1 is True and method.ext_2 is False:
-            extend = 'min'
-        elif method.ext_1 is False and method.ext_2 is True:
-            extend = 'max'
-        else:
-            extend = 'both'
-
-        return extend
 
     def plot(self):
         '''Main plotting interface
@@ -1659,7 +1694,7 @@ class Plot2D(object):
     def _plotIsofill(self):
         '''Core plotting function, isofill/contourf'''
 
-        extend = Plot2D.getExtend(self.method)
+        extend = self.method.extend
 
         cs = self.ax.contourf(
             self.lons, self.lats, self.var, self.method.levels,
@@ -1682,7 +1717,7 @@ class Plot2D(object):
     def _plotIsoline(self):
         '''Core plotting function, isoline/contour'''
 
-        extend = Plot2D.getExtend(self.method)
+        extend = self.method.extend
 
         if self.method.color is not None:
             colors = [self.method.color]*len(self.method.levels)
@@ -1764,10 +1799,10 @@ class Plot2D(object):
             norm=self.method.norm,
             vmin=self.method.vmin, vmax=self.method.vmax,
             interpolation='nearest',
-            extent=[self.xarray.min(),
-                    self.xarray.max(),
-                    self.yarray.min(),
-                    self.yarray.max()],
+            extent=[self.x.min(),
+                    self.x.max(),
+                    self.y.min(),
+                    self.y.max()],
             aspect='auto')
 
         return cs
@@ -1914,15 +1949,13 @@ class Plot2D(object):
         loclatlon = MaxNLocator(nbins='auto', steps=[
             #1, 2, 2.5, 3, 4, 5, 6, 7, 8, 8.5, 9, 10])
                                 1, 2, 4, 5, 8, 10])
-        lat_labels = loclatlon.tick_values(
-            np.min(self.yarray), np.max(self.yarray))
-        lon_labels = loclatlon.tick_values(
-            np.min(self.xarray), np.max(self.xarray))
-        idx = np.where((lat_labels >= np.min(self.yarray)) & (
-            lat_labels <= np.max(self.yarray)))
+        lat_labels = loclatlon.tick_values(np.min(self.y), np.max(self.y))
+        lon_labels = loclatlon.tick_values(np.min(self.x), np.max(self.x))
+
+        idx = np.where((lat_labels >= np.min(self.y)) & (lat_labels <= np.max(self.y)))
         lat_labels = np.array(lat_labels)[idx]
-        idx = np.where((lon_labels >= np.min(self.xarray)) & (
-            lon_labels <= np.max(self.xarray)))
+
+        idx = np.where((lon_labels >= np.min(self.x)) & (lon_labels <= np.max(self.x)))
         lon_labels = np.array(lon_labels)[idx]
 
         if meridians[3] == 1:
@@ -2081,7 +2114,7 @@ class Plot2D(object):
 
         if self.method.method in ['boxfill', 'pcolor']:
             ticks = None
-            extend = Plot2D.getExtend(self.method)
+            extend = self.method.extend
         else:
             ticks = getattr(self.method, 'levels', None)
             extend = None
@@ -2150,10 +2183,8 @@ class Plot2D(object):
                         [0.95, 0.20, 0.02, 0.6])
 
         # ------------------Plot colorbar------------------
-        cbar = plt.colorbar(
-            self.cs, cax=cax, orientation=self.legend_ori,
-            ticks=ticks,
-            drawedges=isdrawedges, extend=extend)
+        cbar = plt.colorbar(self.cs, cax=cax, orientation=self.legend_ori,
+            ticks=ticks, drawedges=isdrawedges)
 
         # -------------------Re-format ticks-------------------
         if self.method.method in [
@@ -2199,7 +2230,7 @@ class Plot2D(object):
         if self.clean or self.title == 'none':
             return
 
-        geo=self.ax._gplot_geo[:-1]
+        geo = self.ax._gplot_geo[:-1]
 
         if self.title is None and geo[0]*geo[1] == 1:
             return
@@ -2237,7 +2268,7 @@ class Plot2Quiver(Plot2D):
     '''
 
     def __init__(
-            self, u, v, method, ax=None, xarray=None, yarray=None,
+            self, u, v, method, ax=None, x=None, y=None,
             title=None, label_axes=True, axes_grid=False,
             clean=False, fontsize=None, units=None, fill_color='w',
             curve=False):
@@ -2251,9 +2282,9 @@ class Plot2Quiver(Plot2D):
         Keyword Args:
             ax (matplotlib axis or None): axis obj. Determines where to plot.
                 If None, create a new.
-            xarray (1darray or None): array to use as the x-coordinates. If None,
+            x (1darray or None): array to use as the x-coordinates. If None,
                 use the indices of the last dimension: np.arange(slab.shape[-1]).
-            yarray (1darray or None): array to use as the y-coordinates. If None,
+            y (1darray or None): array to use as the y-coordinates. If None,
                 use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
             title (str or None): text as the figure title if <ax> is the
                 single plot in the figure. If None, automatically
@@ -2287,15 +2318,23 @@ class Plot2Quiver(Plot2D):
             curve (bool): whether to plot quivers as curved vectors. Experimental.
         '''
 
+        '''
         fill_color = fill_color or rcParams['fill_color']
         title = title or rcParams['title']
         label_axes = label_axes or rcParams['label_axes']
         axes_grid = axes_grid or rcParams['axes_grid']
         fontsize = fontsize or rcParams['fontsize']
         clean = clean or rcParams['clean']
+        '''
+        fill_color = update_kwarg('fill_color' , fill_color)
+        title      = update_kwarg('title'      , title)
+        label_axes = update_kwarg('label_axes' , label_axes)
+        axes_grid  = update_kwarg('axes_grid'  , axes_grid)
+        fontsize   = update_kwarg('fontsize'   , fontsize)
+        clean      = update_kwarg('clean'      , clean)
 
         Plot2D.__init__(self, u, method, ax=ax,
-                        xarray=xarray, yarray=yarray,
+                        x=x, y=y,
                         title=title,
                         label_axes=label_axes,
                         axes_grid=axes_grid, legend=None, clean=clean,
@@ -2309,9 +2348,9 @@ class Plot2Quiver(Plot2D):
 
         # ----------------------Regrid----------------------
         if self.method.reso is not None:
-            xx = self.xarray
-            yy = self.yarray
-            self.var, self.yarray, self.xarray = regridToReso(
+            xx = self.x
+            yy = self.y
+            self.var, self.y, self.x = regridToReso(
                 self.var, yy, xx, self.method.reso, self.method.reso,
                 lat_idx=-2, lon_idx=-1, method='linear', return_coords=True)
             self.v = regridToReso(
@@ -2321,11 +2360,11 @@ class Plot2Quiver(Plot2D):
             # ---------------------Spacing---------------------
             self.var = self.var[::self.step, ::self.step]
             self.v = self.v[::self.step, ::self.step]
-            self.xarray = self.xarray[::self.step]
-            self.yarray = self.yarray[::self.step]
+            self.x = self.x[::self.step]
+            self.y = self.y[::self.step]
 
         # ---------------------Get grid---------------------
-        self.xarray, self.yarray, self.lons, self.lats = self.getGrid()
+        self.x, self.y, self.lons, self.lats = self.getGrid()
 
     def plot(self):
         '''Main plotting interface
@@ -2340,8 +2379,8 @@ class Plot2Quiver(Plot2D):
 
         self.quiver = self._plot()
         self.plotAxes()
-        self.ax.set_xlim(np.min(self.xarray), np.max(self.xarray))
-        self.ax.set_ylim(np.min(self.yarray), np.max(self.yarray))
+        self.ax.set_xlim(np.min(self.x), np.max(self.x))
+        self.ax.set_ylim(np.min(self.y), np.max(self.y))
         self.qkey = self.plotkey()
         self.plotTitle()
 
@@ -2359,7 +2398,7 @@ class Plot2Quiver(Plot2D):
         if self.curve:
             warnings.warn(
                 '#<gplot warning>: The curved quiver functionality is experimental.')
-            grains = int((len(self.xarray)+len(self.yarray)))
+            grains = int((len(self.x)+len(self.y)))
             quiver = modplot.velovect(self.ax, self.lons, self.lats, self.var,
                                       self.v, scale=15,
                                       grains=grains, color=self.method.color)
@@ -2412,7 +2451,7 @@ class Plot2Quiver(Plot2D):
 # -----------------------------------------------------------------------
 
 
-def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
+def plot2(var, method, ax=None, x=None, y=None, var_v=None, **kwargs):
     '''Wrapper 2D plotting interface function
 
     Args:
@@ -2424,14 +2463,14 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
     Keyword Args:
         ax (matplotlib axis or None): axis obj. Determines where to plot.
             If None, create a new.
-        xarray (1darray or None): array to use as the x-coordinates. If None,
+        x (1darray or None): array to use as the x-coordinates. If None,
             use the indices of the last dimension: np.arange(slab.shape[-1]).
-        yarray (1darray or None): array to use as the y-coordinates. If None,
+        y (1darray or None): array to use as the y-coordinates. If None,
             use the indices of the 2nd last dimension: np.arange(slab.shape[-2]).
         var_v (ndarray or None): if a quiver plot (method is Quiver), the
             y-component of the velocity data, and <var> is the x-component.
         nc_interface (str): netcdf data interfacing module, could be 'cdat',
-            'xarray', 'iris' or 'netcdf4'.
+            'x', 'iris' or 'netcdf4'.
         geo_interface (str): geographical plotting module, could be 'basemap',
             or 'cartopy'.
         isgeomap (bool): whether to use geographcial plot.
@@ -2481,20 +2520,20 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
     # get kwargs
     newkwargs = copy.deepcopy(rcParams)
     newkwargs.update(kwargs)
-    nc_interface = newkwargs['nc_interface']
+    nc_interface  = newkwargs['nc_interface']
     geo_interface = newkwargs['geo_interface']
-    fill_color = newkwargs['fill_color']
-    isgeomap = newkwargs['isgeomap']
-    title = newkwargs['title']
-    label_axes = newkwargs['label_axes']
-    axes_grid = newkwargs['axes_grid']
-    projection = newkwargs['projection']
-    bmap = newkwargs['bmap']
-    fontsize = newkwargs['fontsize']
-    clean = newkwargs['clean']
-    fix_aspect = newkwargs['fix_aspect']
-    legend = newkwargs['legend']
-    legend_ori = newkwargs['legend_ori']
+    fill_color    = newkwargs['fill_color']
+    isgeomap      = newkwargs['isgeomap']
+    title         = newkwargs['title']
+    label_axes    = newkwargs['label_axes']
+    axes_grid     = newkwargs['axes_grid']
+    projection    = newkwargs['projection']
+    bmap          = newkwargs['bmap']
+    fontsize      = newkwargs['fontsize']
+    clean         = newkwargs['clean']
+    fix_aspect    = newkwargs['fix_aspect']
+    legend        = newkwargs['legend']
+    legend_ori    = newkwargs['legend_ori']
 
     nc_interface = nc_interface.lower()
     if nc_interface not in ['cdat', 'iris', 'xarray', 'netcdf4']:
@@ -2504,8 +2543,7 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
     geo_interface = geo_interface.lower()
     if geo_interface not in ['basemap', 'cartopy']:
         raise Exception(
-            "Geographical plotting interface not supported: %s" %
-            geo_interface)
+            "Geographical plotting interface not supported: %s" % geo_interface)
 
     if np.ndim(var) == 1:
         raise Exception("<var> is 1D")
@@ -2519,7 +2557,7 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
     elif nc_interface == 'xarray':
         raise Exception("Not implemented.")
 
-    isgeo2, var2, xx, yy = checkGeomap(var, xarray, yarray)
+    isgeo2, var2, xx, yy = checkGeomap(var, x, y)
 
     # -------------------Quiver plot-------------------
     if var_v is not None and isinstance(method, Quiver):
@@ -2528,7 +2566,7 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
         elif geo_interface == 'cartopy':
             from gplot.lib.cartopy_utils import Plot2QuiverCartopy as Plot2Geo
 
-        isgeo2_v, var_v, _, _ = checkGeomap(var_v, xarray, yarray)
+        isgeo2_v, var_v, _, _ = checkGeomap(var_v, x, y)
 
         if fill_color == '0.8':
             # change default to white for quiver plots
@@ -2536,14 +2574,14 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
 
         if isgeomap and isgeo2 and isgeo2_v:
             plotobj = Plot2Geo(
-                var2, var_v, method, ax=ax, xarray=xx, yarray=yy,
+                var2, var_v, method, ax=ax, x=xx, y=yy,
                 title=title, label_axes=label_axes, axes_grid=axes_grid,
                 fill_color=fill_color, projection=projection,
                 bmap=bmap, fontsize=fontsize,
                 clean=clean, fix_aspect=fix_aspect)
         else:
             plotobj = Plot2Quiver(
-                var, var_v, method, ax=ax, xarray=xx, yarray=yy, title=title,
+                var, var_v, method, ax=ax, x=xx, y=yy, title=title,
                 label_axes=label_axes, axes_grid=axes_grid, clean=clean,
                 fontsize=fontsize, fill_color=fill_color)
 
@@ -2557,21 +2595,21 @@ def plot2(var, method, ax=None, xarray=None, yarray=None, var_v=None, **kwargs):
         if isgeomap and isgeo2:
             if geo_interface == 'basemap':
                 plotobj = Plot2Geo(
-                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    var2, method, ax=ax, legend=legend, x=xx, y=yy,
                     title=title, label_axes=label_axes, axes_grid=axes_grid,
                     fill_color=fill_color, projection=projection,
                     bmap=bmap, fontsize=fontsize,
                     legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
             elif geo_interface == 'cartopy':
                 plotobj = Plot2Geo(
-                    var2, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                    var2, method, ax=ax, legend=legend, x=xx, y=yy,
                     title=title, label_axes=label_axes, axes_grid=axes_grid,
                     fill_color=fill_color, projection=projection,
                     fontsize=fontsize,
                     legend_ori=legend_ori, clean=clean, fix_aspect=fix_aspect)
         else:
             plotobj = Plot2D(
-                var, method, ax=ax, legend=legend, xarray=xx, yarray=yy,
+                var, method, ax=ax, legend=legend, x=xx, y=yy,
                 title=title, label_axes=label_axes, axes_grid=axes_grid,
                 fontsize=fontsize, legend_ori=legend_ori, clean=clean,
                 fill_color=fill_color)

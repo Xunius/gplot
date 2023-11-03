@@ -17,7 +17,7 @@ def test_basemap_default():
     figure = plt.figure(figsize=(12, 10), dpi=100)
     ax = figure.add_subplot(111)
     iso = gplot.Isofill(var1)
-    gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats,
+    gplot.plot2(var1, iso, ax, x=lons, y=lats,
                 title='Default basemap', projection='cyl',
                 nc_interface='netcdf4')
     figure.show()
@@ -43,9 +43,9 @@ def test_basemap_isofill_overflow():
     figure = plt.figure(figsize=(12, 10), dpi=100)
     ax = figure.add_subplot(111)
     iso = gplot.Isofill(var1, num=10, zero=1, split=1,
-                        min_level=11000, qr=0.01)
+                        vmin=11000, qr=0.01)
     gplot.plot2(
-        var1, iso, ax, xarray=lons, yarray=lats,
+        var1, iso, ax, x=lons, y=lats,
         title='Isofill with overflows', projection='cyl',
         nc_interface='netcdf4')
     figure.show()
@@ -59,7 +59,7 @@ def test_basemap_isofill_split():
     ax = figure.add_subplot(111)
     iso = gplot.Isofill(var1, num=10, zero=1, split=2)
     gplot.plot2(
-        var1, iso, ax, xarray=lons, yarray=lats,
+        var1, iso, ax, x=lons, y=lats,
         title='Isofill with force split', projection='cyl',
         nc_interface='netcdf4')
     figure.show()
@@ -72,7 +72,7 @@ def test_basemap_isoline():
     figure=plt.figure(figsize=(12,10),dpi=100)
     ax=figure.add_subplot(111)
     iso=gplot.Isoline(var1-np.mean(var1), num=10, zero=1, split=2, black=True, linewidth=2)
-    gplot.plot2(var1-np.mean(var1), iso, ax, xarray=lons, yarray=lats,
+    gplot.plot2(var1-np.mean(var1), iso, ax, x=lons, y=lats,
             legend=None, title='Isoline', projection='cyl')
     figure.show()
 
@@ -84,7 +84,7 @@ def test_basemap_boxfill():
     figure = plt.figure(figsize=(12, 10), dpi=100)
     ax = figure.add_subplot(111)
     box = gplot.Boxfill(var1)
-    gplot.plot2(var1, box, ax, xarray=lons, yarray=lats,
+    gplot.plot2(var1, box, ax, x=lons, y=lats,
                 title='default Boxfill', projection='cyl',
                 nc_interface='netcdf4')
     figure.show()
@@ -134,14 +134,14 @@ def test_basemap_shading():
     ax = figure.add_subplot(111)
 
     iso = gplot.Isofill(var1)
-    g1 = gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats,
+    g1 = gplot.plot2(var1, iso, ax, x=lons, y=lats,
                      title='Basemap with shading', projection='cyl',
                      nc_interface='netcdf4')
 
     shading = gplot.Shading(color='g', alpha=0.5)
     thres = np.percentile(var1, 80)
     gplot.plot2(np.where(var1 >= thres, 1, np.nan),
-                shading, ax, xarray=lons, yarray=lats, projection='cyl',
+                shading, ax, x=lons, y=lats, projection='cyl',
                 bmap=g1.bmap, clean=True, nc_interface='netcdf4')
 
     figure.show()
@@ -155,7 +155,7 @@ def test_basemap_stroke():
     ax = figure.add_subplot(111)
     iso = gplot.Isofill(var1, stroke=True)
     gplot.plot2(
-        var1, iso, ax, xarray=lons, yarray=lats,
+        var1, iso, ax, x=lons, y=lats,
         title='Basemap isofill with stroke', projection='cyl',
         nc_interface='netcdf4')
     figure.show()
@@ -176,13 +176,13 @@ def test_basemap_subplots():
     for ii, vii in enumerate(plot_vars1):
         ax = figure.add_subplot(3, 2, 2*ii+1)
         gplot.plot2(
-            vii, iso1, ax, xarray=lons, yarray=lats, title=titles1[ii],
+            vii, iso1, ax, x=lons, y=lats, title=titles1[ii],
             legend='local', projection='cyl', nc_interface='netcdf4')
 
     for ii, vii in enumerate(plot_vars2):
         ax = figure.add_subplot(3, 2, 2*ii+2)
         gplot.plot2(
-            vii, iso2, ax, xarray=lons, yarray=lats, title=titles2[ii],
+            vii, iso2, ax, x=lons, y=lats, title=titles2[ii],
             legend='local', projection='cyl', nc_interface='netcdf4')
 
     figure.show()
@@ -200,7 +200,7 @@ def test_basemap_subplots_global_legend():
     for ii, vii in enumerate(plot_vars):
         ax = figure.add_subplot(2, 2, ii+1)
         gplot.plot2(
-            vii, iso1, ax, xarray=lons, yarray=lats, title=titles[ii],
+            vii, iso1, ax, x=lons, y=lats, title=titles[ii],
             legend='global', projection='cyl', nc_interface='netcdf4')
 
     figure.show()
@@ -214,7 +214,7 @@ def test_basemap_quiver():
     ax = figure.add_subplot(111)
     q = gplot.Quiver()
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='default quiver',
+        u, v, q, x=lons, y=lats, ax=ax, title='default quiver',
         projection='cyl')
     pquiver.plot()
 
@@ -229,7 +229,7 @@ def test_basemap_quiver_reso():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=10)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax, title='quiver reso=10',
+        u, v, q, x=lons, y=lats, ax=ax, title='quiver reso=10',
         projection='cyl')
     pquiver.plot()
 
@@ -244,7 +244,7 @@ def test_basemap_quiver_scale():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax,
+        u, v, q, x=lons, y=lats, ax=ax,
         title='quiver step=5, scale=500', projection='cyl')
     pquiver.plot()
 
@@ -259,7 +259,7 @@ def test_basemap_quiver_scale_keylength():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500, keylength=20)
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax,
+        u, v, q, x=lons, y=lats, ax=ax,
         title='quiver step=5, scale=500, keylength=20', projection='cyl')
     pquiver.plot()
 
@@ -274,12 +274,12 @@ def test_basemap_quiver_overlay():
     ax = figure.add_subplot(111)
     q = gplot.Quiver(reso=5, scale=500)
     iso = gplot.Isofill(var1)
-    gplot.plot2(var1, iso, ax, xarray=lons, yarray=lats,
+    gplot.plot2(var1, iso, ax, x=lons, y=lats,
                 title='default Plot2D', projection='cyl',
                 nc_interface='netcdf4')
 
     pquiver = Plot2QuiverBasemap(
-        u, v, q, xarray=lons, yarray=lats, ax=ax,
+        u, v, q, x=lons, y=lats, ax=ax,
         title='quiver overlay', projection='cyl')
     pquiver.plot()
     figure.show()
