@@ -31,7 +31,7 @@ import warnings
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, TwoSlopeNorm
 from matplotlib import ticker
 from matplotlib.pyplot import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap
@@ -837,6 +837,7 @@ def alternateTicks(cbar, ticks=None, fontsize=9):
 # -----------------------------------------------------------------------
 
 
+'''
 class TwoSlopeNorm(Normalize):
     def __init__(self, vcenter, vmin=None, vmax=None):
         """
@@ -905,6 +906,7 @@ class TwoSlopeNorm(Normalize):
         if is_scalar:
             result = np.atleast_1d(result)[0]
         return result
+'''
 
 
 class PlotMethod(object):
