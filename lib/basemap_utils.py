@@ -340,17 +340,20 @@ class Plot2Basemap(Plot2D):
         if self.clean:
             return
 
-        if self.isdrawcoastlines:
-            self.bmap.drawcoastlines(
-                linewidth=0.5, linestyle='solid', color='k', antialiased=True)
-        if self.isdrawcountries:
-            self.bmap.drawcountries(
-                linewidth=0.5, linestyle='solid', color='k', antialiased=True)
-        if self.isfillcontinents:
-            self.bmap.fillcontinents(color='w', lake_color=None, alpha=0.2)
-        if self.isdrawrivers:
-            self.bmap.drawrivers(linewidth=0.5, linestyle='solid', color='b',
-                                 antialiased=True)
+        try:
+            if self.isdrawcoastlines:
+                self.bmap.drawcoastlines(
+                    linewidth=0.5, linestyle='solid', color='k', antialiased=True)
+            if self.isdrawcountries:
+                self.bmap.drawcountries(
+                    linewidth=0.5, linestyle='solid', color='k', antialiased=True)
+            if self.isfillcontinents:
+                self.bmap.fillcontinents(color='w', lake_color=None, alpha=0.2)
+            if self.isdrawrivers:
+                self.bmap.drawrivers(linewidth=0.5, linestyle='solid', color='b',
+                                     antialiased=True)
+        except:
+            pass
 
         return
 
