@@ -9,6 +9,7 @@ import numpy as np
 import cartopy.crs as ccrs
 from cartopy.util import add_cyclic_point
 from gplot.lib.base_utils import Plot2D, Plot2Quiver
+from gplot.lib.base_utils import clean_up_artists
 
 
 class Plot2Cartopy(Plot2D):
@@ -39,14 +40,30 @@ class Plot2Cartopy(Plot2D):
         self.isfillcontinents = isfillcontinents
         self.isdrawrivers     = isdrawrivers
 
+        # save a copy of the old x axis values. This maybe used later in
+        # update_plot() to call again the add_cyclic_point() method, re-using
+        # this copy of x
+        self.old_x = self.x.copy()
+        self.add_cyclic_point()
+
+        if not self.fix_aspect:
+            self.ax.set_aspect('auto')
+
+
+
+    def add_cyclic_point(self, lons=None):
+
+        # allow passing in a new lons arg
+        if lons is None:
+            lons = self.x
+
         try:
-            self.var, self.x = add_cyclic_point(self.var, self.x)
+            self.var, self.x = add_cyclic_point(self.var, lons)
             self.lons, self.lats = np.meshgrid(self.x, self.y)
         except:
             pass
 
-        if not self.fix_aspect:
-            self.ax.set_aspect('auto')
+        return
 
     def getProjectionNTransform(self, proj):
 
@@ -61,6 +78,34 @@ class Plot2Cartopy(Plot2D):
                 result = ccrs.PlateCarree()
 
         return result
+
+
+    def update_plot(self, var):
+        '''Update an existing plot by re-doing only data plotting, skipping
+        axes, colorbar etc.
+
+        Args:
+            var (ndarray): new data to plot. Needs to have compatible size
+                as self.x, self.y.
+
+        NOTE that this function assumes the new data <var> is compatible in shape
+        and value range as the initial data been plotted earlier. This is
+        helpful when creating a sequence of time slices of the a variable, e.g.
+        SST, with the same resolution as domain size, and using the plotting
+        method (e.g isofill, and therefore same colorbar).
+        Skipping the init steps and plotting of the axes, colorbar etc. can
+        help saving some time.
+        '''
+
+        if not hasattr(self, 'cs'):
+            return
+
+        self.var = self.getSlab(var)
+        self.add_cyclic_point(self.old_x)
+        clean_up_artists(self.ax, [self.cs])
+        self.cs = self._plot()
+
+        return
 
     def plotOthers(self):
 
@@ -129,6 +174,97 @@ class Plot2Cartopy(Plot2D):
 
         return
 
+
+    def _plotIsofill(self):
+        '''Core plotting function, isofill/contourf
+
+        Use this overloading because the transform_first kwarg is unique to
+        cartopy's axes.
+        '''
+
+        extend = self.method.extend
+        transform_first = self._transform is not None
+
+        cs = self.ax.contourf(
+            self.lons, self.lats, self.var, self.method.levels,
+            cmap=self.method.cmap, extend=extend, norm=self.method.norm,
+                transform_first=transform_first,
+            transform=self._transform)
+
+        if self.method.stroke:
+            nl = len(self.method.levels)
+            css = self.ax.contour(
+                self.lons, self.lats, self.var, self.method.levels,
+                colors=[self.method.stroke_color, ]*nl,
+                linestyles=[self.method.stroke_linestyle, ]*nl,
+                linewidths=[self.method.stroke_lw, ]*nl,
+                transform=self._transform,
+                transform_first=transform_first,
+            )
+            self.css = css
+
+        return cs
+
+
+
+    def _plotIsoline(self):
+        '''Core plotting function, isoline/contour
+
+        Use this overloading because the transform_first kwarg is unique to
+        cartopy's axes.
+        '''
+
+        extend = self.method.extend
+        transform_first = self._transform is not None
+
+        if self.method.color is not None:
+            colors = [self.method.color]*len(self.method.levels)
+            cmap = None
+        else:
+            if self.method.black:
+                colors = ['k']*len(self.method.levels)
+                cmap = None
+            else:
+                colors = None
+                cmap = None
+
+        cs = self.ax.contour(
+            self.lons, self.lats, self.var, self.method.levels,
+            colors=colors,
+            cmap=cmap, extend=extend,
+            linewidths=self.method.linewidth,
+            alpha=self.method.alpha,
+            transform=self._transform,
+            transform_first=transform_first)
+
+        # -----------------Set line styles-----------------
+        if self.method.dash_negative:
+            for ii in range(len(cs.collections)):
+                cii = cs.collections[ii]
+                lii = cs.levels[ii]
+                if lii < 0:
+                    cii.set_linestyle('dashed')
+                else:
+                    cii.set_linestyle('solid')
+
+        # ----------------Thicken some lines----------------
+        if self.method.bold_lines is not None:
+            multi = 2.0
+            idx_bold = []
+            for bii in self.method.bold_lines:
+                idxii = np.where(np.array(cs.levels) == bii)[0]
+                if len(idxii) > 0:
+                    idx_bold.append(int(idxii))
+
+            for bii in idx_bold:
+                cs.collections[bii].set_linewidth(
+                    self.method.linewidth * multi)
+
+        #-------------------Plot labels-------------------
+        if self.method.label:
+            self.plotContourLabels(cs)
+
+        return cs
 
 class Plot2QuiverCartopy(Plot2Cartopy, Plot2Quiver):
 

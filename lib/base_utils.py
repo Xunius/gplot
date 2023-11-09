@@ -867,6 +867,40 @@ def get_ax_geometry(ax):
 
     return geo, subidx
 
+
+def clean_up_artists(axis, artist_list):
+    """
+    try to remove the artists stored in the artist list belonging to the 'axis'.
+    :param axis: clean artists belonging to these axis
+    :param artist_list: list of artist to remove
+    :return: nothing
+
+    Obtained from: https://stackoverflow.com/a/42201952/2005415.
+    """
+    for artist in artist_list:
+        try:
+            # fist attempt: try to remove collection of contours for instance
+            while artist.collections:
+                for col in artist.collections:
+                    artist.collections.remove(col)
+                    try:
+                        axis.collections.remove(col)
+                    except ValueError:
+                        pass
+
+                artist.collections = []
+                axis.collections = []
+        except AttributeError:
+            pass
+
+        # second attempt, try to remove the text
+        try:
+            artist.remove()
+        except (AttributeError, ValueError):
+            pass
+
+    return
+
 # -----------------------------------------------------------------------
 # -                       Plotting method classes                       -
 # -----------------------------------------------------------------------
@@ -1564,7 +1598,7 @@ class Plot2D(object):
         self._transform = None  # to be overwriten by Plot2Cartopy
 
         # ---------------------Get slab---------------------
-        self.var = getSlab(self.var)
+        self.var = self.getSlab(self.var)
 
         # ---------------------Get grid---------------------
         self.x, self.y, self.lons, self.lats = self.getGrid()
@@ -1576,6 +1610,10 @@ class Plot2D(object):
         # get changed after creating a local colorbar:
         if not hasattr(self.ax, '_gplot_geo'):
             self.ax._gplot_geo = self.geo + (self.subidx,)
+
+    @staticmethod
+    def getSlab(var):
+        return getSlab(var)
 
     # ---------------------Get grid---------------------
 
@@ -1652,6 +1690,35 @@ class Plot2D(object):
 
         return self.cs
 
+
+    def update_plot(self, var):
+        '''Update an existing plot by re-doing only data plotting, skipping
+        axes, colorbar etc.
+
+        Args:
+            var (ndarray): new data to plot. Needs to have compatible size
+                as self.x, self.y.
+
+        NOTE that this function assumes the new data <var> is compatible in shape
+        and value range as the initial data been plotted earlier. This is
+        helpful when creating a sequence of time slices of the a variable, e.g.
+        SST, with the same resolution as domain size, and using the plotting
+        method (e.g isofill, and therefore same colorbar).
+        Skipping the init steps and plotting of the axes, colorbar etc. can
+        help saving some time.
+        '''
+
+        if not hasattr(self, 'cs'):
+            return
+
+        self.var = self.getSlab(var)
+        #self.x, self.y, self.lons, self.lats = self.getGrid()
+        clean_up_artists(self.ax, [self.cs])
+        self.cs = self._plot()
+
+        return
+
+
     def _plot(self):
         '''Core plotting function
 
@@ -1708,7 +1775,7 @@ class Plot2D(object):
                 colors=[self.method.stroke_color, ]*nl,
                 linestyles=[self.method.stroke_linestyle, ]*nl,
                 linewidths=[self.method.stroke_lw, ]*nl,
-                transform=self._transform
+                transform=self._transform,
             )
             self.css = css
 
