@@ -36,7 +36,7 @@ __all__=[
         'remap_colormap', 'get_colormap', 'get_colorbar_pad', 'pick_point',
         'get_slab', 'regrid_to_reso', 'get_missing_mask', 'get_quantiles',
         'get_range', 'alternate_ticks', 'Isofill', 'Isoline', 'Boxfill',
-        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', ]
+        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', 'Barbs']
 
 # Default parameters
 rcParams = {
@@ -52,7 +52,7 @@ rcParams = {
     'fix_aspect'    : False,
     'nc_interface'  : 'netcdf4',
     'geo_interface' : 'cartopy',
-    'fontsize'      : 8,
+    'fontsize'      : 6,
     'verbose'       : True,
     'default_cmap'  : plt.cm.RdBu_r
 }
@@ -71,7 +71,7 @@ _default_rcParams = {
     'fix_aspect'    : False,
     'nc_interface'  : 'netcdf4',
     'geo_interface' : 'cartopy',
-    'fontsize'      : 8,
+    'fontsize'      : 6,
     'verbose'       : True,
     'default_cmap'  : plt.cm.RdBu_r
 }
@@ -1336,3 +1336,45 @@ class Quiver(object):
         self.linewidth = linewidth
         self.color     = color
         self.alpha     = alpha
+
+
+class Barbs(object):
+    '''Plotting method for wind barbs plots'''
+    method: str = 'barbs'
+
+    def __init__(self, step=1, reso=None, standard='cma',
+                 keylength=5, linewidth=1.,
+                 color='k', alpha=1.0, emptybarb=0.05, spacing=0.27,
+                 height=0.5):
+        '''Plotting method for wind barbs plots
+
+        Keyword Args:
+            step (int): sub-sample steps in both x- and  y- axes. U and V
+                data are sub-sampled using `U[::step,::step]`.
+            reso (int or None): if not None, regrid input U and V data to a
+                lower resolution, measured in grids.
+                If both < reso > and <step> are given, use <reso>.
+                Requires scipy for this functionality.
+            scale (float or None): see same arg as matplotlib.pyplot.quiver().
+            keylength (float or None): see same arg as matplotlib.pylot.quiver().
+            linewidth (float): line width.
+            color (str or color tuple): color to plot quiver arrows.
+            alpha (float): transparent level in [0, 1].
+        '''
+
+        self.step      = step
+        self.reso      = reso
+        self.standard  = standard
+        self.keylength = keylength
+        self.linewidth = linewidth
+        self.color     = color
+        self.alpha     = alpha
+
+        self.emptybarb = emptybarb
+        self.spacing   = spacing
+        self.height    = height
+
+        if standard == 'cma':
+            self.barb_increments = {'half':2, 'full': 4, 'flag': 20}
+        else:
+            self.barb_increments = {'half':5, 'full': 10, 'flag': 50}

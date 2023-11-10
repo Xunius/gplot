@@ -458,6 +458,76 @@ class TestCartopyPlots(unittest.TestCase):
         return
 
 
+    def test_cartopy_barbs(self):
+
+        figure = plt.figure(figsize=(8, 6), dpi=100)
+        ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
+
+        q = gplot.Barbs(step=14, linewidth=0.5, keylength=5)
+        uu = self.u * 2
+        vv = self.v * 2
+
+        plotobj = Plot2QuiverCartopy(uu, vv, q, x=self.lons,
+                                     y=self.lats, ax=ax,
+                                     title='Wind barbs',
+                                     projection='cyl')
+
+        plotobj.plot()
+
+        #----------------- Save plot ------------
+        plot_save_name = 'test_cartopy_barbs.png'
+        plot_save_name = os.path.join(self.output_dir, plot_save_name)
+        os.makedirs(self.output_dir, exist_ok=True)
+        print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+        figure.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+
+        self.assertTrue(os.path.exists(plot_save_name),
+                        msg='{} not created.'.format(plot_save_name))
+
+        return
+
+
+    def test_cartopy_barbs_update_plot(self):
+
+        proj = ccrs.PlateCarree()
+        u_list = [ self.u, ] * 10
+        v_list = [ self.v, ] * 10
+
+        figure = plt.figure(figsize=(12, 10), dpi=100)
+        ax = figure.add_subplot(111, projection=proj)
+        q = gplot.Barbs(step=14, linewidth=0.5, keylength=5, standard='cma')
+
+        for ii, (uii, vii) in enumerate(zip(u_list, v_list)):
+
+            uii = uii
+            vii = vii * -1 * (ii+1)
+
+            if ii == 0:
+
+                plotobj = Plot2QuiverCartopy(uii, vii, q, x=self.lons,
+                                             y=self.lats, ax=ax,
+                                             title='barbs update_plot',
+                                             projection=proj)
+
+                plotobj.plot()
+            else:
+                plotobj.update_plot(uii, vii)
+
+            #----------------- Save plot ------------
+            plot_save_name = f'test_cartopy_barbs_update_plot_{ii}.png'
+            plot_save_name = os.path.join(self.output_dir, plot_save_name)
+            os.makedirs(self.output_dir, exist_ok=True)
+            print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+            figure.savefig(plot_save_name, dpi=100, transparent=False)
+
+            self.assertTrue(os.path.exists(plot_save_name),
+                            msg='{} not created.'.format(plot_save_name))
+
+        plt.close(figure)
+
+        return
+
+
     def tearDown(self):
         '''Do clean up after test'''
 

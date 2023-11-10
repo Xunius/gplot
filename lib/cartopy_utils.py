@@ -19,6 +19,7 @@ from gplot.lib.base_utils import clean_up_artists, update_kwarg, get_slab, \
         alternate_ticks, regrid_to_reso
 from gplot.lib import modplot
 
+from gplot.lib import cma_wind_barbs
 
 
 class Plot2Cartopy(object):
@@ -838,9 +839,15 @@ class Plot2QuiverCartopy(Plot2Cartopy):
 
     def plot(self):
 
-        self.quiver = self._plot()
+        if self.method.method == 'quiver':
+            self.quiver = self._plot_quiver()
+            self.qkey = self.plot_quiverkey()
+        elif self.method.method == 'barbs':
+            self.quiver = self._plot_barbs()
+        else:
+            raise Exception("Unsupported plotting method: {}".format(self.quiver))
+
         self.plot_axes()
-        self.qkey = self.plot_quiverkey()
         self.plot_title()
 
         return self.quiver
@@ -875,7 +882,7 @@ class Plot2QuiverCartopy(Plot2Cartopy):
         return
 
 
-    def _plot(self):
+    def _plot_quiver(self):
         '''Core quiver plotting function
 
         Returns:
@@ -899,6 +906,30 @@ class Plot2QuiverCartopy(Plot2Cartopy):
             color=self.method.color, alpha=self.method.alpha, zorder=3)
 
         return quiver
+
+
+    def _plot_barbs(self):
+        '''Core barbs plotting function
+
+        Returns:
+            self.barbs (mappable): the Barbs obj.
+        '''
+
+        if self.method.standard == 'cma':
+            cma_wind_barbs.setup()
+        else:
+            cma_wind_barbs.restore()
+
+        barbs = self.ax.barbs(self.lons, self.lats, self.var, self.v,
+                              length=self.method.keylength,
+                         sizes={'emptybarb': self.method.emptybarb,
+                                'spacing': self.method.spacing,
+                                'height': self.method.height},
+                 barb_increments=self.method.barb_increments,
+                 linewidth=self.method.linewidth,
+                 transform=self._transform, zorder=3)
+
+        return barbs
 
 
     def plot_quiverkey(self):
