@@ -175,7 +175,7 @@ Default parameters
         }
 
 The :py:data:`base_utils.rcParams` dict can be altered to make a change
-persistent in a Python session. And the :py:func:`base_utils.restoreParams` can
+persistent in a Python session. And the :py:func:`base_utils.restore_params` can
 be used to restore the original values. E.g.
 
 ::
@@ -185,6 +185,6 @@ be used to restore the original values. E.g.
     test_basemap_default()
     test_basemap_isofill_overflow()
 
-    gplot.restoreParams()
+    gplot.restore_params()
 
     test_basemap_isolines()

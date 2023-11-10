@@ -1,6 +1,6 @@
 '''Test Cartopy plots
 
-Author: guangzhi XU (xugzhi1987@gmail.com; guangzhi.xu@outlook.com)
+Author: guangzhi XU (xugzhi1987@gmail.com)
 Update time: 2023-11-03 15:16:28.
 '''
 
@@ -13,7 +13,7 @@ import cartopy.crs as ccrs
 
 import gplot
 from gplot.lib import netcdf4_utils
-from gplot.lib.cartopy_utils import Plot2QuiverCartopy
+from gplot.lib.cartopy_utils import Plot2Cartopy, Plot2QuiverCartopy
 
 
 class TestCartopyPlots(unittest.TestCase):
@@ -32,6 +32,7 @@ class TestCartopyPlots(unittest.TestCase):
         self.lats = netcdf4_utils.readData('latitude')
         self.lons = netcdf4_utils.readData('longitude')
 
+
     def test_cartopy_default(self):
 
         figure = plt.figure(figsize=(8, 6), dpi=100)
@@ -39,9 +40,9 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Default cartopy',
-                    projection='cyl', geo_interface='cartopy', nc_interface='netcdf4')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='default cartopy', projection='cyl',)
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_default.png'
@@ -64,10 +65,10 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Default cartopy', projection='cyl',
-                    geo_interface='cartopy', label_axes=False,
-                    nc_interface='netcdf4')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='label_axes=False', projection='cyl',
+                            label_axes=False)
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_label_axes_False.png'
@@ -89,9 +90,10 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Cartopy axes_grid=True', projection='cyl',
-                    axes_grid=True, geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='axes_grid=True', projection='cyl',
+                            axes_grid=True)
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_axes_grid.png'
@@ -113,9 +115,10 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Cartopy vertical legend', projection='cyl',
-                    legend_ori='vertical', geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='legend_ori="vertical"', projection='cyl',
+                            legend_ori='vertical')
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_vertical_legend.png'
@@ -137,17 +140,24 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Basemap with shading', projection='cyl',
-                    geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='Isofill with region shading', projection='cyl',)
+        pobj.plot()
+
 
         shading = gplot.Shading(color='g', alpha=0.5)
-
         thres = np.percentile(self.var1, 80)
         shadevar = np.where(self.var1 >= thres, 1, np.nan)
 
-        gplot.plot2(shadevar, shading, ax, x=self.lons, y=self.lats,
-                    projection='cyl', clean=True, geo_interface='cartopy')
+        pobj.method = shading
+        pobj.clean = True
+        pobj.update_plot(shadevar, del_old=False)
+
+        '''
+        pobj = Plot2Cartopy(shadevar, shading, self.lons, self.lats, ax=ax,
+                            title='Cartopy with shading', clean=True, projection='cyl',)
+        pobj.plot()
+        '''
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_shading.png'
@@ -169,9 +179,9 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001, stroke=True)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Cartopy isofill with stroke', projection='cyl',
-                    geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='Isofill with stroke', projection='cyl')
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_stroke.png'
@@ -193,9 +203,9 @@ class TestCartopyPlots(unittest.TestCase):
 
         iso = gplot.Isofill(self.var1, 10, 1, 2, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, iso, ax, x=self.lons, y=self.lats,
-                    title='Cartopy force split', projection='cyl',
-                    geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='Isofill force split colors', projection='cyl')
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_force_split.png'
@@ -217,9 +227,9 @@ class TestCartopyPlots(unittest.TestCase):
 
         box = gplot.Boxfill(self.var1, 1, ql=0.005, qr=0.001)
 
-        gplot.plot2(self.var1, box, ax, x=self.lons, y=self.lats,
-                    title='Default Cartopy boxfill', projection='cyl',
-                    geo_interface='cartopy')
+        pobj = Plot2Cartopy(self.var1, box, self.lons, self.lats, ax=ax,
+                            title='boxfill', projection='cyl')
+        pobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_boxfill.png'
@@ -253,9 +263,10 @@ class TestCartopyPlots(unittest.TestCase):
             if ii % 2 == 1:
                 isoii = iso2
 
-            gplot.plot2(vii, isoii, ax, x=self.lons, y=self.lats,
-                        title=titles[ii], legend='local',
-                        geo_interface='cartopy')
+            Plot2Cartopy(vii, isoii, self.lons, self.lats, ax=ax,
+                                title=titles[ii], projection='cyl',
+                                legend='local', fontsize=5).plot()
+
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_subplots.png'
@@ -294,9 +305,9 @@ class TestCartopyPlots(unittest.TestCase):
             if ii % 2 == 1:
                 isoii = iso2
 
-            gplot.plot2(vii, isoii, ax, x=self.lons, y=self.lats,
-                        title=titles[ii], legend='local',
-                        geo_interface='cartopy')
+            Plot2Cartopy(vii, isoii, self.lons, self.lats, ax=ax,
+                                title=titles[ii], projection='cyl',
+                                legend='local', fontsize=5).plot()
 
         figure.tight_layout()
 
@@ -324,9 +335,10 @@ class TestCartopyPlots(unittest.TestCase):
         for ii, vii in enumerate(plot_vars):
             ax = figure.add_subplot(2, 2, ii+1, projection=ccrs.PlateCarree())
 
-            gplot.plot2(vii, iso1, ax, x=self.lons, y=self.lats,
-                        title=titles[ii], legend='global', fix_aspect=False,
-                        geo_interface='cartopy')
+            Plot2Cartopy(vii, iso1, self.lons, self.lats, ax=ax,
+                                title=titles[ii], projection='cyl',
+                                legend='global', fix_aspect=False,
+                         fontsize=5).plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_subplots_global_legend.png'
@@ -341,6 +353,44 @@ class TestCartopyPlots(unittest.TestCase):
         return
 
 
+    def test_cartopy_update_plot(self):
+
+        proj = ccrs.PlateCarree()
+        var_list = [ self.var1, ] * 10
+        ref_var = self.var1
+
+        figure = plt.figure(figsize=(12, 10), dpi=100)
+        ax = figure.add_subplot(111, projection=proj)
+        iso = gplot.Isofill(ref_var, 10, 1, 1, ql=0.005, qr=0.001)
+
+        for ii, varii in enumerate(var_list):
+
+            if ii == 0:
+
+                plotobj = Plot2Cartopy(
+                    varii, iso, ax=ax, legend='global', x=self.lons, y=self.lats,
+                    title='update_plot',
+                    projection=proj)
+
+                plotobj.plot()
+            else:
+                plotobj.update_plot(varii)
+
+            #----------------- Save plot ------------
+            plot_save_name = f'test_cartopy_update_plot_{ii}.png'
+            plot_save_name = os.path.join(self.output_dir, plot_save_name)
+            os.makedirs(self.output_dir, exist_ok=True)
+            print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+            figure.savefig(plot_save_name, dpi=100, transparent=False)
+
+            self.assertTrue(os.path.exists(plot_save_name),
+                            msg='{} not created.'.format(plot_save_name))
+
+        plt.close(figure)
+
+        return
+
+
     def test_cartopy_quiver(self):
 
         figure = plt.figure(figsize=(8, 6), dpi=100)
@@ -348,11 +398,11 @@ class TestCartopyPlots(unittest.TestCase):
 
         q = gplot.Quiver(step=5)
 
-        pquiver = Plot2QuiverCartopy(self.u, self.v, q, x=self.lons,
+        plotobj = Plot2QuiverCartopy(self.u, self.v, q, x=self.lons,
                                      y=self.lats, ax=ax, title='default quiver',
                                      projection='cyl')
 
-        pquiver.plot()
+        plotobj.plot()
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_quiver.png'
@@ -364,7 +414,46 @@ class TestCartopyPlots(unittest.TestCase):
         self.assertTrue(os.path.exists(plot_save_name),
                         msg='{} not created.'.format(plot_save_name))
 
+        return
 
+
+    def test_cartopy_quiver_update_plot(self):
+
+        proj = ccrs.PlateCarree()
+        u_list = [ self.u, ] * 10
+        v_list = [ self.v, ] * 10
+
+        figure = plt.figure(figsize=(12, 10), dpi=100)
+        ax = figure.add_subplot(111, projection=proj)
+        q = gplot.Quiver(step=5)
+
+        for ii, (uii, vii) in enumerate(zip(u_list, v_list)):
+
+            uii = uii * (ii+1)
+            vii = vii * -1 * (ii+1)
+
+            if ii == 0:
+
+                plotobj = Plot2QuiverCartopy(uii, vii, q, x=self.lons,
+                                             y=self.lats, ax=ax,
+                                             title='quiver update_plot',
+                                             projection=proj)
+
+                plotobj.plot()
+            else:
+                plotobj.update_plot(uii, vii)
+
+            #----------------- Save plot ------------
+            plot_save_name = f'test_cartopy_quiver_update_plot_{ii}.png'
+            plot_save_name = os.path.join(self.output_dir, plot_save_name)
+            os.makedirs(self.output_dir, exist_ok=True)
+            print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+            figure.savefig(plot_save_name, dpi=100, transparent=False)
+
+            self.assertTrue(os.path.exists(plot_save_name),
+                            msg='{} not created.'.format(plot_save_name))
+
+        plt.close(figure)
 
         return
 
@@ -373,7 +462,8 @@ class TestCartopyPlots(unittest.TestCase):
         '''Do clean up after test'''
 
         try:
-            shutil.rmtree(self.output_dir)
+            #shutil.rmtree(self.output_dir)
+            pass
         except:
             pass
         else:

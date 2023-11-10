@@ -127,7 +127,7 @@ def test_cartopy_default4(proj, var_list, ref_var):
             print('\n# <speed_tests>: Save figure to', plot_save_name)
             figure.savefig(plot_save_name+'.png', dpi=100, transparent=False)
 
-        plt.close(figure)
+    plt.close(figure)
 
     return
 
