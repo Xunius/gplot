@@ -14,6 +14,7 @@ import cartopy.crs as ccrs
 import gplot
 from gplot.lib import netcdf4_utils
 from gplot.lib.cartopy_utils import Plot2Cartopy, Plot2QuiverCartopy
+from gplot.lib.Colormaps import cma_colormaps
 
 
 class TestCartopyPlots(unittest.TestCase):
@@ -458,24 +459,53 @@ class TestCartopyPlots(unittest.TestCase):
         return
 
 
-    def test_cartopy_barbs(self):
+    def test_cartopy_barbs_cma(self):
 
         figure = plt.figure(figsize=(8, 6), dpi=100)
         ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
 
-        q = gplot.Barbs(step=14, linewidth=0.5, keylength=5)
+        q = gplot.Barbs(step=14, linewidth=0.5, keylength=5, standard='cma')
         uu = self.u * 2
         vv = self.v * 2
 
         plotobj = Plot2QuiverCartopy(uu, vv, q, x=self.lons,
                                      y=self.lats, ax=ax,
-                                     title='Wind barbs',
+                                     title='Wind barbs, CMA style',
                                      projection='cyl')
 
         plotobj.plot()
 
         #----------------- Save plot ------------
-        plot_save_name = 'test_cartopy_barbs.png'
+        plot_save_name = 'test_cartopy_barbs_cma_style.png'
+        plot_save_name = os.path.join(self.output_dir, plot_save_name)
+        os.makedirs(self.output_dir, exist_ok=True)
+        print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+        figure.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+
+        self.assertTrue(os.path.exists(plot_save_name),
+                        msg='{} not created.'.format(plot_save_name))
+
+        return
+
+
+    def test_cartopy_barbs_default(self):
+
+        figure = plt.figure(figsize=(8, 6), dpi=100)
+        ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
+
+        q = gplot.Barbs(step=14, linewidth=0.5, keylength=5, standard='default')
+        uu = self.u * 2
+        vv = self.v * 2
+
+        plotobj = Plot2QuiverCartopy(uu, vv, q, x=self.lons,
+                                     y=self.lats, ax=ax,
+                                     title='Wind barbs, default style',
+                                     projection='cyl')
+
+        plotobj.plot()
+
+        #----------------- Save plot ------------
+        plot_save_name = 'test_cartopy_barbs_default_style.png'
         plot_save_name = os.path.join(self.output_dir, plot_save_name)
         os.makedirs(self.output_dir, exist_ok=True)
         print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
@@ -524,6 +554,33 @@ class TestCartopyPlots(unittest.TestCase):
                             msg='{} not created.'.format(plot_save_name))
 
         plt.close(figure)
+
+        return
+
+
+    def test_cartopy_cma_colormap(self):
+
+        figure = plt.figure(figsize=(8, 6), dpi=100)
+        ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
+
+        cmap_obj = cma_colormaps.SST_CMAP
+        var = self.var2 - 273.15
+        iso = gplot.Isofill(var, 10, 1, 1, ql=0.005, qr=0.001,
+                            cmap=cmap_obj)
+
+        pobj = Plot2Cartopy(var, iso, self.lons, self.lats, ax=ax,
+                            title='cma colormap', projection='cyl',)
+        pobj.plot()
+
+        #----------------- Save plot ------------
+        plot_save_name = 'test_cartopy_cma_colormap.png'
+        plot_save_name = os.path.join(self.output_dir, plot_save_name)
+        os.makedirs(self.output_dir, exist_ok=True)
+        print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+        figure.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+
+        self.assertTrue(os.path.exists(plot_save_name),
+                        msg='{} not created.'.format(plot_save_name))
 
         return
 

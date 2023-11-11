@@ -92,6 +92,9 @@ class Plot2Cartopy(object):
         if not self.fix_aspect:
             self.ax.set_aspect('auto')
 
+        # use lib.Colormap.colormap or not
+        self.use_custom_cmap = hasattr(self.method, 'colormap')
+
 
     @staticmethod
     def get_slab(var):
@@ -597,6 +600,72 @@ class Plot2Cartopy(object):
         return
 
 
+    def get_colorbar_ax(self):
+        '''Get axis obj for colorbar'''
+
+        # --------------Create a colorbar axis--------------
+        if self.legend == 'local' or (
+                self.legend == 'global' and self.geo[0] * self.geo[1] == 1):
+
+            if self.method.method in ['boxfill', 'pcolor']:
+
+                # Adjust position according to the existence of axis ticks
+                pad = get_colorbar_pad(self.ax, self.legend_ori, base_pad=0.02)
+                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
+
+            elif self.method.method in ['isofill', 'isoline']:
+                if self.legend_ori == 'horizontal':
+                    # compute extra padding needed for the top side tick labels
+                    dummybox = create_dummy_textbox(self.ax, self._fontsize)
+                    pad = get_colorbar_pad(
+                        self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
+                else:
+                    pad = get_colorbar_pad(
+                        self.ax, self.legend_ori, base_pad=0.02)
+
+            cax, _ = mcbar.make_axes_gridspec(
+                self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
+                fraction=0.07, aspect=35)
+
+        # -----Use the 1st subplot as global color bar-----
+        elif self.legend == 'global' and self.subidx == 1:
+
+            fig = self.ax.get_figure()
+            subplots = list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
+
+            if self.legend_ori == 'horizontal':
+                if len(subplots) > 1:
+                    if fig.get_constrained_layout():
+                        cax, _ = mcbar.make_axes(
+                            subplots, orientation=self.legend_ori, shrink=0.85,
+                            pad=0.01, fraction=0.07, aspect=35)
+                    else:
+                        dummybox = create_dummy_textbox(self.ax, self._fontsize)
+                        pad = dummybox.height*1.2
+                        cax, _ = mcbar.make_axes(
+                            subplots, orientation=self.legend_ori, shrink=0.85,
+                            pad=pad, fraction=0.07, aspect=35)
+                else:
+                    dummybox = create_dummy_textbox(self.ax, self._fontsize)
+                    pad = dummybox.height*0.85
+                    height = 0.02
+                    fig.subplots_adjust(bottom=0.18)
+                    cax = self.ax.get_figure().add_axes(
+                        [0.175, 0.18-height-pad, 0.65, height])
+
+            elif self.legend_ori == 'vertical':
+                if len(subplots) > 1:
+                    cax, _ = mcbar.make_axes(
+                        subplots, orientation=self.legend_ori, shrink=0.85,
+                        pad=0.02, fraction=0.07, aspect=35)
+                else:
+                    fig.subplots_adjust(right=0.90)
+                    cax = self.ax.get_figure().add_axes(
+                        [0.95, 0.20, 0.02, 0.6])
+
+        return cax
+
+
     def plot_colorbar(self):
         '''Plot colorbar
 
@@ -636,100 +705,48 @@ class Plot2Cartopy(object):
         if self.legend == 'global' and self.subidx > 1:
             return
 
-        # --------------Create a colorbar axis--------------
-        if self.legend == 'local' or (
-                self.legend == 'global' and self.geo[0] * self.geo[1] == 1):
-
-            if self.method.method in ['boxfill', 'pcolor']:
-
-                # Adjust position according to the existence of axis ticks
-                pad = get_colorbar_pad(self.ax, self.legend_ori, base_pad=0.02)
-                # NOTE: mcbar.make_axes() doesn't work well with tight_layout()
-
-            elif self.method.method in ['isofill', 'isoline']:
-                if self.legend_ori == 'horizontal':
-                    # compute extra padding needed for the top side tick labels
-                    dummybox = create_dummy_textbox(self.ax, self._fontsize)
-                    pad = get_colorbar_pad(
-                        self.ax, self.legend_ori, base_pad=dummybox.height*1.5)
-                else:
-                    pad = get_colorbar_pad(
-                        self.ax, self.legend_ori, base_pad=0.02)
-
-            cax, kw = mcbar.make_axes_gridspec(
-                self.ax, orientation=self.legend_ori, shrink=0.85, pad=pad,
-                fraction=0.07, aspect=35)
-
-        # -----Use the 1st subplot as global color bar-----
-        elif self.legend == 'global' and self.subidx == 1:
-
-            fig = self.ax.get_figure()
-            subplots = list(filter(lambda x: isinstance(x, matplotlib.axes.SubplotBase), fig.axes))
-
-            if self.legend_ori == 'horizontal':
-                if len(subplots) > 1:
-                    if fig.get_constrained_layout():
-                        cax, kw = mcbar.make_axes(
-                            subplots, orientation=self.legend_ori, shrink=0.85,
-                            pad=0.01, fraction=0.07, aspect=35)
-                    else:
-                        dummybox = create_dummy_textbox(self.ax, self._fontsize)
-                        pad = dummybox.height*1.2
-                        cax, kw = mcbar.make_axes(
-                            subplots, orientation=self.legend_ori, shrink=0.85,
-                            pad=pad, fraction=0.07, aspect=35)
-                else:
-                    dummybox = create_dummy_textbox(self.ax, self._fontsize)
-                    pad = dummybox.height*0.85
-                    height = 0.02
-                    fig.subplots_adjust(bottom=0.18)
-                    cax = self.ax.get_figure().add_axes(
-                        [0.175, 0.18-height-pad, 0.65, height])
-
-            elif self.legend_ori == 'vertical':
-                if len(subplots) > 1:
-                    cax, kw = mcbar.make_axes(
-                        subplots, orientation=self.legend_ori, shrink=0.85,
-                        pad=0.02, fraction=0.07, aspect=35)
-                else:
-                    fig.subplots_adjust(right=0.90)
-                    cax = self.ax.get_figure().add_axes(
-                        [0.95, 0.20, 0.02, 0.6])
+        #----------------Get colorbar axis----------------
+        cax = self.get_colorbar_ax()
 
         # ------------------Plot colorbar------------------
-        cbar = plt.colorbar(self.cs, cax=cax, orientation=self.legend_ori,
-            ticks=ticks, drawedges=isdrawedges)
+        if self.use_custom_cmap:
+            cbar = self.method.colormap.plot_colorbar(self.ax, cax=cax,
+                                               orientation=self.legend_ori)
 
-        # -------------------Re-format ticks-------------------
-        if self.method.method in [
-                'isofill', 'isoline'] and self.legend_ori == 'horizontal':
-            #cbar = self.alternate_ticks(cbar, ticks)
-            cbar = alternate_ticks(cbar, ticks, self._fontsize)
-        cbar.ax.tick_params(labelsize=self._fontsize)
+        else:
+            cbar = plt.colorbar(self.cs, cax=cax, orientation=self.legend_ori,
+                ticks=ticks, drawedges=isdrawedges)
 
-        # --------------------Plot unit--------------------
-        var_units = getattr(self.var, 'units', '')
-        if var_units is None:
-            var_units = self.units
+            # -------------------Re-format ticks-------------------
+            if self.method.method in [
+                    'isofill', 'isoline'] and self.legend_ori == 'horizontal':
+                #cbar = self.alternate_ticks(cbar, ticks)
+                cbar = alternate_ticks(cbar, ticks, self._fontsize)
+            cbar.ax.tick_params(labelsize=self._fontsize)
 
-        if var_units:
-            # option1: plot colorbar units below
-            # self.cbar.set_label(var_units,fontsize=self._fontsize)
+            # --------------------Plot unit--------------------
+            var_units = getattr(self.var, 'units', '')
+            if var_units is None:
+                var_units = self.units
 
-            # option2: plot colorbar units to the right or below, depending on
-            # orientation
-            if self.legend_ori == 'horizontal':
-                cbar_ax = cbar.ax
-                cbar_ax.text(1.02, 0.5, var_units, fontsize=self._fontsize,
-                             transform=cbar_ax.transAxes,
-                             horizontalalignment='left',
-                             verticalalignment='center')
-            elif self.legend_ori == 'vertical':
-                cbar_ax = cbar.ax
-                cbar_ax.text(
-                    0.5, -0.05, var_units, fontsize=self._fontsize,
-                    transform=cbar_ax.transAxes,
-                    horizontalalignment='left', verticalalignment='top')
+            if var_units:
+                # option1: plot colorbar units below
+                # self.cbar.set_label(var_units,fontsize=self._fontsize)
+
+                # option2: plot colorbar units to the right or below, depending on
+                # orientation
+                if self.legend_ori == 'horizontal':
+                    cbar_ax = cbar.ax
+                    cbar_ax.text(1.02, 0.5, var_units, fontsize=self._fontsize,
+                                 transform=cbar_ax.transAxes,
+                                 horizontalalignment='left',
+                                 verticalalignment='center')
+                elif self.legend_ori == 'vertical':
+                    cbar_ax = cbar.ax
+                    cbar_ax.text(
+                        0.5, -0.05, var_units, fontsize=self._fontsize,
+                        transform=cbar_ax.transAxes,
+                        horizontalalignment='left', verticalalignment='top')
 
         return cbar
 

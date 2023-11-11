@@ -31,12 +31,14 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib import colors
 
+from gplot.lib.Colormaps.colormap import ColorMap
+
 __all__=[
         'rcParams', 'restore_params', 'mkscale', 'index2Letter',
         'remap_colormap', 'get_colormap', 'get_colorbar_pad', 'pick_point',
         'get_slab', 'regrid_to_reso', 'get_missing_mask', 'get_quantiles',
         'get_range', 'alternate_ticks', 'Isofill', 'Isoline', 'Boxfill',
-        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', 'Barbs']
+        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', 'Barbs', 'ColorMap']
 
 # Default parameters
 rcParams = {
@@ -858,8 +860,8 @@ class PlotMethod(object):
                 determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
-            cmap (matplotlib colormap or None): colormap to use. If None, use
-                the default in rcParams['default_cmap'].
+            cmap (matplotlib colormap or None or ColorMap): colormap to use.
+                If None, use the default in rcParams['default_cmap'].
             verbose (bool): whether to print some info or not.
         '''
 
@@ -1002,8 +1004,8 @@ class Isofill(PlotMethod):
                 determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
-            cmap (matplotlib colormap or None): colormap to use. If None, use
-                the default in rcParams['default_cmap'].
+            cmap (matplotlib colormap or None or ColorMap): colormap to use.
+                If None, use the default in rcParams['default_cmap'].
             stroke (bool): whether to overlay a layer of thin contour lines on
                 top of contourf.
             stroke_color (str or color tuple): color to plot the overlying
@@ -1036,9 +1038,16 @@ class Isofill(PlotMethod):
         self.compute_extend(np.min(self.levels), np.max(self.levels))
 
         # -------------------Get colormap-------------------
-        self.cmap = get_colormap(self.cmap)
-        self.cmap, self.norm = self.adjust_colormap(vmin=np.min(self.levels),
-                                                   vmax=np.max(self.levels))
+        if self.cmap is not None and isinstance(self.cmap, ColorMap):
+            self.colormap = self.cmap
+            self.cmap = self.colormap.cmap
+            self.norm = self.colormap.norm
+            # this may overwrite self.compute_extend()
+            self.extend = self.colormap.extend
+        else:
+            self.cmap = get_colormap(self.cmap)
+            self.cmap, self.norm = self.adjust_colormap(vmin=np.min(self.levels),
+                                                       vmax=np.max(self.levels))
 
         return
 
@@ -1093,8 +1102,8 @@ class Isoline(Isofill):
                 determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
-            cmap (matplotlib colormap or None): colormap to use. If None, use
-                the default in rcParams['default_cmap'].
+            cmap (matplotlib colormap or None or ColorMap): colormap to use.
+                If None, use the default in rcParams['default_cmap'].
             black (bool): use black lines instead of colored lines.
             color (str or color tuple): color to plot the contour lines.
             linewidth (float): line width to plot the contour lines.
@@ -1174,8 +1183,8 @@ class Boxfill(PlotMethod):
                 determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
-            cmap (matplotlib colormap or None): colormap to use. If None, use
-                the default in rcParams['default_cmap'].
+            cmap (matplotlib colormap or None or ColorMap): colormap to use.
+                If None, use the default in rcParams['default_cmap'].
             verbose (bool): whether to print some info or not.
         '''
 
@@ -1185,8 +1194,17 @@ class Boxfill(PlotMethod):
 
         self.compute_range()
         self.compute_extend(self.vmin, self.vmax)
-        self.cmap = get_colormap(self.cmap)
-        self.cmap, self.norm = self.adjust_colormap(vmin=self.vmin, vmax=self.vmax)
+
+        # -------------------Get colormap-------------------
+        if self.cmap is not None and isinstance(self.cmap, ColorMap):
+            self.colormap = self.cmap
+            self.cmap = self.colormap.cmap
+            self.norm = self.colormap.norm
+            # this may overwrite self.compute_extend()
+            self.extend = self.colormap.extend
+        else:
+            self.cmap = get_colormap(self.cmap)
+            self.cmap, self.norm = self.adjust_colormap(vmin=self.vmin, vmax=self.vmax)
 
 
 class Pcolor(Boxfill):
@@ -1230,8 +1248,8 @@ class Pcolor(Boxfill):
                 determine from <vmax> if given. If both <vmax> and <qr> are
                 None, use maximum value from <vars>. If both given, take the smaller.
             vcenter (float): value at which to split the colormap. Default to 0.
-            cmap (matplotlib colormap or None): colormap to use. If None, use
-                the default in rcParams['default_cmap'].
+            cmap (matplotlib colormap or None or ColorMap): colormap to use.
+                If None, use the default in rcParams['default_cmap'].
             verbose (bool): whether to print some info or not.
         '''
 
