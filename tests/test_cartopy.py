@@ -585,6 +585,34 @@ class TestCartopyPlots(unittest.TestCase):
         return
 
 
+    def test_cartopy_streamplot(self):
+
+        figure = plt.figure(figsize=(8, 6), dpi=100)
+        proj = ccrs.PlateCarree()
+        ax = figure.add_subplot(111, projection=proj)
+
+        q = gplot.Stream(step=2, density=3, arrowsize=0.5, linewidth=0.6,
+                         color='c')
+
+        plotobj = Plot2QuiverCartopy(self.u, self.v, q, x=self.lons,
+                                     y=self.lats, ax=ax, title='streamplot',
+                                     projection=proj)
+
+        plotobj.plot()
+
+        #----------------- Save plot ------------
+        plot_save_name = 'test_cartopy_streamplot.png'
+        plot_save_name = os.path.join(self.output_dir, plot_save_name)
+        os.makedirs(self.output_dir, exist_ok=True)
+        print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+        figure.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+
+        self.assertTrue(os.path.exists(plot_save_name),
+                        msg='{} not created.'.format(plot_save_name))
+
+        return
+
+
     def tearDown(self):
         '''Do clean up after test'''
 

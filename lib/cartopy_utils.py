@@ -5,7 +5,7 @@ Update time: 2023-11-09 10:34:18.
 '''
 
 import re
-import warnings
+#import warnings
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ from cartopy.util import add_cyclic_point
 from gplot.lib.base_utils import clean_up_artists, update_kwarg, get_slab, \
         get_ax_geometry, get_colorbar_pad, create_dummy_textbox, index2Letter,\
         alternate_ticks, regrid_to_reso
-from gplot.lib import modplot
+#from gplot.lib import modplot
 
 from gplot.lib import cma_wind_barbs
 
@@ -861,6 +861,8 @@ class Plot2QuiverCartopy(Plot2Cartopy):
             self.qkey = self.plot_quiverkey()
         elif self.method.method == 'barbs':
             self.quiver = self._plot_barbs()
+        elif self.method.method == 'stream':
+            self.quiver = self._plot_stream()
         else:
             raise Exception("Unsupported plotting method: {}".format(self.quiver))
 
@@ -908,14 +910,6 @@ class Plot2QuiverCartopy(Plot2Cartopy):
 
         self.ax.patch.set_color(self.fill_color)
 
-        if self.curve:
-            warnings.warn(
-                '#<gplot warning>: The curved quiver functionality is experimental.')
-            grains = int((len(self.x)+len(self.y)))
-            quiver = modplot.velovect(self.ax, self.lons, self.lats, self.var,
-                                      self.v, scale=15,
-                                      grains=grains, color=self.method.color)
-
         # -------------------Plot vectors-------------------
         quiver = self.ax.quiver(
             self.lons, self.lats, self.var, self.v, scale=self.method.scale,
@@ -923,6 +917,29 @@ class Plot2QuiverCartopy(Plot2Cartopy):
             color=self.method.color, alpha=self.method.alpha, zorder=3)
 
         return quiver
+
+
+    def _plot_stream(self):
+        '''Core streamplot plotting function
+
+        Returns:
+            self.quiver (mappable): the StreamplotSet obj.
+        '''
+
+        # NOTE that cartopy doesn't seem to be able to handle 0-360 lon range
+        if np.nanmax(self.lons >= 180):
+            lons = np.where(self.lons >= 180, self.lons - 360, self.lons)
+        else:
+            lons = self.lons
+
+        sp = self.ax.streamplot(lons, self.lats, self.var, self.v,
+                           transform=self._transform,
+                           linewidth=self.method.linewidth,
+                           density=self.method.density,
+                           arrowsize=self.method.arrowsize,
+                           color=self.method.color)
+
+        return sp
 
 
     def _plot_barbs(self):

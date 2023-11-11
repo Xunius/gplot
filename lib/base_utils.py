@@ -38,7 +38,8 @@ __all__=[
         'remap_colormap', 'get_colormap', 'get_colorbar_pad', 'pick_point',
         'get_slab', 'regrid_to_reso', 'get_missing_mask', 'get_quantiles',
         'get_range', 'alternate_ticks', 'Isofill', 'Isoline', 'Boxfill',
-        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', 'Barbs', 'ColorMap']
+        'Pcolor', 'Hatch', 'Shading', 'GIS', 'Quiver', 'Barbs', 'Stream',
+        'ColorMap']
 
 # Default parameters
 rcParams = {
@@ -1396,3 +1397,37 @@ class Barbs(object):
             self.barb_increments = {'half':2, 'full': 4, 'flag': 20}
         else:
             self.barb_increments = {'half':5, 'full': 10, 'flag': 50}
+
+
+class Stream(object):
+    '''Plotting method for streamline plot'''
+    method: str = 'stream'
+
+    def __init__(self, step=1, reso=None, density=3,
+                 linewidth=None, arrowsize=1, color='k'):
+        '''Plotting method for quiver plots
+
+        Keyword Args:
+            step (int): sub-sample steps in both x- and  y- axes. U and V
+                data are sub-sampled using `U[::step,::step]`.
+            reso (int or None): if not None, regrid input U and V data to a
+                lower resolution, measured in grids.
+                If both < reso > and <step> are given, use <reso>.
+                Requires scipy for this functionality.
+            density (float or (float, float)): Controls the closeness of
+                streamlines. When density = 1, the domain is divided into a
+                30x30 grid. density linearly scales this grid. Each cell in the
+                grid can have, at most, one traversing streamline. For
+                different densities in each direction, use a tuple (density_x,
+                density_y).
+            linewidth (float): line width.
+            arrowsize (float): scaling factor for the arrow size.
+            color (str or color tuple): color to plot quiver arrows.
+        '''
+
+        self.step      = step
+        self.reso      = reso
+        self.density   = density
+        self.linewidth = linewidth
+        self.arrowsize = arrowsize
+        self.color     = color
