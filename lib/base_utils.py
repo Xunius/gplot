@@ -468,8 +468,11 @@ def get_slab(var, index1=-1, index2=-2, verbose=True):
         result = result(squeeze=1)
     return np.array(result)
     '''
+    result = result[0]
+    mask = get_missing_mask(result)
+    result = np.where(mask, np.nan, result)
 
-    return result[0]
+    return result
 
 
 
@@ -722,9 +725,11 @@ def alternate_ticks(cbar, ticks=None, fontsize=9):
     cbar.set_ticks(ticks)
     formatter = cbar.ax.xaxis.get_major_formatter()
     ticklabels = formatter.format_ticks(ticks)
+    offset = formatter.get_offset()
 
     # tick bottom
     cbar.set_ticks(lbot)
+    cbar.set_ticklabels(ticklabels[1:][::2])
 
     # --------------Print top tick labels--------------
     vmin = cbar.norm.vmin
@@ -758,8 +763,13 @@ def alternate_ticks(cbar, ticks=None, fontsize=9):
                      transform=cbar.ax.transAxes)
 
         # plot tick labels
-        cbar.ax.text(xii,
-                     1.30, tlii,
+        cbar.ax.text(xii, 1.30, tlii,
+                     transform=cbar.ax.transAxes, va='bottom',
+                     ha='center', fontsize=fontsize)
+
+    # add offset text
+    if offset:
+        cbar.ax.text(1.06, 1.30, offset,
                      transform=cbar.ax.transAxes, va='bottom',
                      ha='center', fontsize=fontsize)
 

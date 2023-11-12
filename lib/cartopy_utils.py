@@ -27,7 +27,7 @@ class Plot2Cartopy(object):
                  ax=None,
                  title=None, label_axes=True, axes_grid=False,
                  legend='global', legend_ori='horizontal',
-                 clean=False, fontsize=12, projection='cyl', transform=None,
+                 clean=False, fontsize=7, projection='cyl', transform=None,
                  fill_color='0.8', fix_aspect=False, isdrawcoastlines=True,
                  isdrawcountries=True, isdrawcontinents=False, isdrawrivers=False,
                  isfillcontinents=False):
@@ -725,9 +725,10 @@ class Plot2Cartopy(object):
             cbar.ax.tick_params(labelsize=self._fontsize)
 
             # --------------------Plot unit--------------------
-            var_units = getattr(self.var, 'units', '')
+            var_units = getattr(self.var, 'units', None)
+
             if var_units is None:
-                var_units = self.units
+                var_units = self.units or ''
 
             if var_units:
                 # option1: plot colorbar units below
@@ -737,7 +738,7 @@ class Plot2Cartopy(object):
                 # orientation
                 if self.legend_ori == 'horizontal':
                     cbar_ax = cbar.ax
-                    cbar_ax.text(1.02, 0.5, var_units, fontsize=self._fontsize,
+                    cbar_ax.text(1.06, 0.5, var_units, fontsize=self._fontsize,
                                  transform=cbar_ax.transAxes,
                                  horizontalalignment='left',
                                  verticalalignment='center')
@@ -802,7 +803,7 @@ class Plot2QuiverCartopy(Plot2Cartopy):
                  title=None, label_axes=True, axes_grid=False,
                  legend='global', legend_ori='horizontal',
                  curve=False,
-                 clean=False, fontsize=12, projection='cyl', transform=None,
+                 clean=False, fontsize=7, projection='cyl', transform=None,
                  fill_color='0.8', fix_aspect=False, isdrawcoastlines=True,
                  isdrawcountries=True, isdrawcontinents=False, isdrawrivers=False,
                  isfillcontinents=False):

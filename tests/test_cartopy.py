@@ -39,7 +39,7 @@ class TestCartopyPlots(unittest.TestCase):
         figure = plt.figure(figsize=(8, 6), dpi=100)
         ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
 
-        iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
+        iso = gplot.Isofill(self.var1, 10, 1, 1, ql=0.001, qr=0.001)
 
         pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
                             title='default cartopy', projection='cyl',)
@@ -58,6 +58,28 @@ class TestCartopyPlots(unittest.TestCase):
         return
 
 
+    def test_cartopy_isofill_overflow(self):
+
+        figure = plt.figure(figsize=(8, 6), dpi=100)
+        ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
+
+        iso = gplot.Isofill(self.var1, num=10, zero=1, split=1, vmin=95000, qr=0.01)
+
+        pobj = Plot2Cartopy(self.var1, iso, self.lons, self.lats, ax=ax,
+                            title='Isofill with overflow', projection='cyl')
+        pobj.plot()
+
+        #----------------- Save plot ------------
+        plot_save_name = 'test_cartopy_isofill_overflow.png'
+        plot_save_name = os.path.join(self.output_dir, plot_save_name)
+        os.makedirs(self.output_dir, exist_ok=True)
+        print('\n# <test_cartopy>: Save figure to {}'.format(plot_save_name))
+        figure.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+
+        self.assertTrue(os.path.exists(plot_save_name),
+                        msg='{} not created.'.format(plot_save_name))
+
+        return
 
     def test_cartopy_label_axes_False(self):
 
@@ -150,6 +172,7 @@ class TestCartopyPlots(unittest.TestCase):
         thres = np.percentile(self.var1, 80)
         shadevar = np.where(self.var1 >= thres, 1, np.nan)
 
+        '''
         pobj.method = shading
         pobj.clean = True
         pobj.update_plot(shadevar, del_old=False)
@@ -158,7 +181,6 @@ class TestCartopyPlots(unittest.TestCase):
         pobj = Plot2Cartopy(shadevar, shading, self.lons, self.lats, ax=ax,
                             title='Cartopy with shading', clean=True, projection='cyl',)
         pobj.plot()
-        '''
 
         #----------------- Save plot ------------
         plot_save_name = 'test_cartopy_shading.png'
@@ -226,9 +248,11 @@ class TestCartopyPlots(unittest.TestCase):
         figure = plt.figure(figsize=(8, 6), dpi=100)
         ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
 
-        box = gplot.Boxfill(self.var1, 1, ql=0.005, qr=0.001)
+        var = self.var1 / 100
+        box = gplot.Boxfill(var, 1, ql=0.005, qr=0.001)
 
-        pobj = Plot2Cartopy(self.var1, box, self.lons, self.lats, ax=ax,
+        pobj = Plot2Cartopy(var, box, self.lons, self.lats, ax=ax,
+                            units='hPa',
                             title='boxfill', projection='cyl')
         pobj.plot()
 
@@ -294,7 +318,8 @@ class TestCartopyPlots(unittest.TestCase):
         iso1 = gplot.Isofill(self.var1, 10, 1, 1, ql=0.005, qr=0.001)
         iso2 = gplot.Isofill(self.var2, 10, 1, 1, ql=0.05, qr=0.05)
 
-        titles = ['var1', 'var2', 'var1', 'var2']
+        titles = ['msl', 'sst', 'msl', 'sst']
+        units = ['Pa', 'K', 'Pa', 'K']
 
         for ii, vii in enumerate(plot_vars):
             ax = figure.add_subplot(2, 2, ii+1, projection=ccrs.PlateCarree())
@@ -307,6 +332,7 @@ class TestCartopyPlots(unittest.TestCase):
                 isoii = iso2
 
             Plot2Cartopy(vii, isoii, self.lons, self.lats, ax=ax,
+                         units=units[ii],
                                 title=titles[ii], projection='cyl',
                                 legend='local', fontsize=5).plot()
 
@@ -357,12 +383,12 @@ class TestCartopyPlots(unittest.TestCase):
     def test_cartopy_update_plot(self):
 
         proj = ccrs.PlateCarree()
-        var_list = [ self.var1, ] * 10
-        ref_var = self.var1
+        var_list = [ self.var1 * (1+ii/100) for ii in range(10) ]
+        ref_var = var_list[0]
 
         figure = plt.figure(figsize=(12, 10), dpi=100)
         ax = figure.add_subplot(111, projection=proj)
-        iso = gplot.Isofill(ref_var, 10, 1, 1, ql=0.005, qr=0.001)
+        iso = gplot.Isofill(var_list, 10, 1, 1, ql=0.005, qr=0.001)
 
         for ii, varii in enumerate(var_list):
 
@@ -370,6 +396,7 @@ class TestCartopyPlots(unittest.TestCase):
 
                 plotobj = Plot2Cartopy(
                     varii, iso, ax=ax, legend='global', x=self.lons, y=self.lats,
+                    units='Pa',
                     title='update_plot',
                     projection=proj)
 
@@ -400,6 +427,7 @@ class TestCartopyPlots(unittest.TestCase):
         q = gplot.Quiver(step=5)
 
         plotobj = Plot2QuiverCartopy(self.u, self.v, q, x=self.lons,
+                                     units='m/s',
                                      y=self.lats, ax=ax, title='default quiver',
                                      projection='cyl')
 
@@ -617,8 +645,8 @@ class TestCartopyPlots(unittest.TestCase):
         '''Do clean up after test'''
 
         try:
-            shutil.rmtree(self.output_dir)
-            #pass
+            #shutil.rmtree(self.output_dir)
+            pass
         except:
             pass
         else:
