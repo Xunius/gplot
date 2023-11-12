@@ -100,7 +100,7 @@ where:
 
 * `num = 10` specifies the **desired** number of contourf levels.
 * `zero = 1`: 0 is allowed to be one of the contourf levels.
-* `split = 1`: split a divergence colorbar if the plotted data has both positive and negative values.
+* `split = 1`: split a divergence colorbar if the plotted data have both positive and negative values.
 * `vmin = 95000`: **desired** minimum level of the contourf levels.
 * `qr = 0.01`: **desired** maximum level of the contourf levels, specified by the 0.01 right quantile.
 
@@ -288,7 +288,7 @@ pobj.plot()
 
 where:
 
-* `gplot.Boxfill` defines a `imshow` plot.
+* `gplot.Boxfill` defines an `imshow` plot.
 * `units='hPa'` specifies the unit labeled aside the colorbar.
 
 
@@ -317,7 +317,7 @@ for ii, vii in enumerate(plot_vars):
         isoii = iso2
 
     Plot2Cartopy(vii, isoii, lons, lats, ax=ax,
-                 units='units[ii],
+                 units=units[ii],
                  title=titles[ii], projection='cyl',
                  legend='local', fontsize=5).plot()
 
@@ -369,9 +369,6 @@ proj = ccrs.PlateCarree()
 # there are 10 data arrays to plot, put in a list:
 var_list = [ var * (1+ii/100) for ii in range(10) ]
 
-# use the 1st array as a reference variable
-ref_var = var_list[0]
-
 figure = plt.figure(figsize=(12, 10), dpi=100)
 ax = figure.add_subplot(111, projection=proj)
 
@@ -410,7 +407,7 @@ Below are the 1st 2 plots:
 |Contourf plot of global sea level pressure field (in Pa), from ERA-I. The 2nd plot in sequence.|
 
 
-**NOTE**: this `plotobj.update_plot(varii)` method call updates only the core data plotting, leaving the colorbar, axes, axes labels etc. as there were in the 1st plot. This could help saving plotting time, and the more variables to plot in the sequence, the more time saved. See `tests/speed_tests.py` for a comparison of the plotting time.
+**NOTE**: this `plotobj.update_plot(varii)` method call updates only the core data plotting function, leaving the colorbar, axes, axes labels etc. as there were in the 1st plot. This helps saving plot time, and the more variables to plot in the sequence, the more time saved. See `tests/speed_tests.py` for a comparison of the plotting time.
 
 
 ## Vector quiver plot
@@ -489,10 +486,10 @@ Below are the 1st 2 plots:
 |Quiver plot of global 10m wind (in m/s), from ERA-I. The 2nd plot in a sequence of 10.|
 
 
-**NOTE**: this `plotobj.update_plot(varii)` method call updates only the core data plotting, leaving the colorbar, axes, axes labels etc. as there were in the 1st plot. This could help saving plotting time, and the more variables to plot in the sequence, the more time saved. See `tests/speed_tests.py` for a comparison of the plotting time.
+**NOTE**: this `plotobj.update_plot(varii)` method call updates only the core data plotting function, leaving the colorbar, axes, axes labels etc. as there were in the 1st plot. This helps saving plot time, and the more variables to plot in the sequence, the more time saved. See `tests/speed_tests.py` for a comparison of the plotting time.
 
 
-## Wind barbs, the CMA style
+## Wind barbs, CMA style
 
 ```python
 import gplot
@@ -511,7 +508,13 @@ plotobj.plot()
 
 | ![fig17](docs/test_cartopy_barbs_cma_style.png) |
 | :--: |
-|Wind barbs plot of global 10m wind (in m/s), from ERA-I. Using the default standard: short barb = 5 m/s, Full barg = 10 m/s, solid flag = 50 m/s.|
+|Wind barbs plot of global 10m wind (in m/s), from ERA-I. Using the CMA standard: short barb = 2 m/s, Full barg = 4 m/s, hallow flag = 20 m/s, solid flag = 40 m/s.|
+
+In CMA style wind barbs:
+* short bar = 2 m/s,
+* full bar = 4 m/s,
+* hallow flag = 20 m/s,
+* solid flag = 40 m/s.
 
 
 ## Wind barbs, the default style
@@ -534,8 +537,12 @@ plotobj.plot()
 
 | ![fig18](docs/test_cartopy_barbs_default_style.png) |
 | :--: |
-|Wind barbs plot of global 10m wind (in m/s), from ERA-I. Using the CMA standard: short barb = 2 m/s, Full barg = 4 m/s, hallow flag = 20 m/s, solid flag = 40 m/s.|
+|Wind barbs plot of global 10m wind (in m/s), from ERA-I. Using the default standard: short barb = 5 m/s, Full barb = 10 m/s, solid flag = 50 m/s.|
 
+In default style wind barbs:
+* short bar = 5 m/s,
+* full bar = 10 m/s,
+* solid flag = 50 m/s.
 
 
 ## Update data in a wind barbs plot
@@ -643,7 +650,7 @@ More detailed documentation can be found at: https://gplot.readthedocs.io/en/lat
 * matplotlib
 * scipy
 * [netcdf4](https://unidata.github.io/netcdf4-python)
-  [cartopy](https://scitools.org.uk/cartopy/docs/latest/)
+* [cartopy](https://scitools.org.uk/cartopy/docs/latest/)
 
 
 # Contributing and getting help
