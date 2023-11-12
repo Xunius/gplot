@@ -645,8 +645,8 @@ class TestCartopyPlots(unittest.TestCase):
         '''Do clean up after test'''
 
         try:
-            #shutil.rmtree(self.output_dir)
-            pass
+            shutil.rmtree(self.output_dir)
+            #pass
         except:
             pass
         else:
