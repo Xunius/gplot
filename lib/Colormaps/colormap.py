@@ -5,6 +5,7 @@ Update time: 2023-10-24 09:31:38.
 '''
 
 
+__all__ = ['create_cmap_from_csv', 'load_colormaps', 'ColorMap', 'ColorMapGroup']
 
 
 # -------- Import modules -------------------------
@@ -34,10 +35,11 @@ import matplotlib as mpl
 Level = namedtuple('Level', ['vmin', 'vmax', 'rgb_tuple', 'label'], defaults=[''])
 
 
-
+DEF_FOLDER = os.path.join(os.path.dirname(__file__), 'colormap_defs')
+IMG_FOLDER = os.path.join(os.path.dirname(__file__), 'images')
 
 @dataclass
-class ColorMap(object):
+class ColorMap:
     """Colormap class
 
     name (str): name of colormap, e.g. 'pre'.
@@ -48,7 +50,7 @@ class ColorMap(object):
 
     name         : str  = ''
     unit         : str  = ''
-    level_colors : list = field(default_factory = list)
+    level_colors : list = field(default_factory=list)
     description  : str  = ''
 
 
@@ -61,54 +63,21 @@ class ColorMap(object):
         else:
             res = self.init_from_levels()
 
-        self._bin_edges, self._bin_centers, self._cmap, self._norm, self._extend,\
-            self._labels = res
+        self.bin_edges, self.bin_centers, self.cmap, self.norm, self.extend,\
+            self.labels = res
 
         # colorbar ticks
         if all([x == '' for x in self.labels]):
             # if no labels, use boundary numbers as ticks
-            self._ticks = self.bin_edges
-            self._tick_labels = None
+            self.ticks = self.bin_edges
+            self.tick_labels = None
             self.spacing = 'proportional'
         else:
             # if labels provided, set ticks at level centers, and use uniform
             # spacing
-            self._ticks = self.bin_centers
-            self._tick_labels = self.labels
+            self.ticks = self.bin_centers
+            self.tick_labels = self.labels
             self.spacing = 'uniform'
-
-    @property
-    def bin_edges(self):
-        return self._bin_edges
-
-    @property
-    def bin_centers(self):
-        return self._bin_centers
-
-    @property
-    def cmap(self):
-        return self._cmap
-
-    @property
-    def norm(self):
-        return self._norm
-
-    @property
-    def extend(self):
-        return self._extend
-
-    @property
-    def labels(self):
-        return self._labels
-
-    @property
-    def ticks(self):
-        return self._ticks
-
-    @property
-    def tick_labels(self):
-        return self._tick_labels
-
 
     @staticmethod
     def norm_rgb(rgb_tuple: Tuple) -> Tuple:
@@ -360,23 +329,140 @@ class ColorMap(object):
                 self.level_colors.append(ll)
 
         name = os.path.basename(file_path)
-        name = os.path.splitext(name)[0]
+        name = '{}_CMAP'.format(os.path.splitext(name)[0].upper())
         self.name = name
         self.__post_init__()
 
         return self
 
 
-def create_cmap_from_csv(file_path: str, collector_dict: Optional[dict]) -> ColorMap:
+@dataclass
+class ColorMapGroup:
+
+    name        : str = ''
+    folder      : str = ''
+    img_folder  : str = ''
+    collection  : dict = field(default_factory=dict)
+    description : str = ''
+
+    def add(self, new: Union[ColorMap, 'ColorMapGroup']) -> None:
+        self.collection[new.name] = new
+        self.__setattr__(new.name, new)
+        return
+
+    def remove(self, thing: Union[str, ColorMap, 'ColorMapGroup']) -> None:
+
+        if isinstance(thing, str):
+            key = thing
+        elif isinstance(thing, (ColorMap, ColorMapGroup)):
+            key = thing.name
+        else:
+            raise ValueError('<colormap> must be of type str or ColorMap or ColorMapGroup')
+
+        try:
+            del self.collection[key]
+        except KeyError:
+            print(f'{key} not in collection')
+
+        return
+
+    def info(self, verbose=False) -> None:
+
+        count = len(self.collection)
+        print(f'This ColorMapGroup has {count} elements:')
+
+        for ii, (key, value) in enumerate(self.collection.items()):
+            if verbose:
+                print(f'{ii+1}/{count} {key}:')
+                print(value)
+            else:
+                print(f'{ii+1}/{count} {value.name}: {value.description}')
+
+        return
+
+
+    def __getattr__(self, item):
+
+        return self.collection[item]
+
+
+    def __set__(self, key: str, value: Union[ColorMap, 'ColorMapGroup']) -> None:
+
+        self.collection[key] = value
+
+        return
+
+    def plot_colormaps(self, output_dir: Optional[str]=None):
+
+        if output_dir is None:
+            output_dir = self.img_folder
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        for kk, vv in self.collection.items():
+            print(f'Plotting {kk}')
+            ax = vv.plot_demo()
+            fig = ax.get_figure()
+
+            #----------------- Save plot------------
+            plot_save_name = '{}_demo.png'.format(vv.description)
+            plot_save_name = os.path.join(output_dir, plot_save_name)
+            print('\n# <cma_colors>: Save figure to', plot_save_name)
+            fig.savefig(plot_save_name, dpi=100, bbox_inches='tight')
+            #plt.close(fig)
+
+        return
+
+
+def create_cmap_from_csv(file_path: str) -> ColorMap:
     '''Helper function to create a colormap obj from csv file'''
 
     cmap = ColorMap()
     cmap.read_from_csv(file_path)
 
-    if collector_dict is not None:
-        collector_dict[cmap.name] = cmap
-
     return cmap
 
 
+def load_colormaps(def_folder):
+    '''Load colormap definitions from csv files
 
+    Args:
+        def_folder (str): base folder containing subfolders. Each subfolder
+            is treated as a ColorMapGroup, and contains a number of csv files,
+            defining individual colormaps.
+
+    Returns:
+        names (list): list of tuples (ColorMapGroup name, ColorMapGroup obj).
+    '''
+
+    names = []
+
+    # loop through sub folders
+    for subdir in os.listdir(def_folder):
+        if not subdir.endswith('colormaps'):
+            continue
+
+        subdir_path = os.path.join(def_folder, subdir)
+        img_folder = os.path.join(IMG_FOLDER, subdir)
+        colormap_group = ColorMapGroup(name=subdir, folder=subdir_path,
+                                       img_folder=img_folder)
+
+        csv_files = os.listdir(subdir_path)
+
+        # loop through csv files
+        for ff in csv_files:
+            if os.path.splitext(ff)[1] != '.csv':
+                continue
+
+            path = os.path.join(subdir_path, ff)
+
+            try:
+                cmap = create_cmap_from_csv(path)
+            except:
+                print(f'Failed to load colormap from file: {path}. Skip.')
+            else:
+                colormap_group.add(cmap)
+
+        names.append((subdir.upper(), colormap_group))
+
+    return names

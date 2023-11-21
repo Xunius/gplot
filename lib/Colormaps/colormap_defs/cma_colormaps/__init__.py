@@ -12,13 +12,11 @@ __all__ = ['TEMP_CMAP',            'DTEMP_CMAP',           'TEMP_ANO_CMAP',
            'PRE_ANO_CMAP',         'RH_CMAP',              'ALARM_LEVEL_CMAP',
            'DRAUGHT_LEVEL_CMAP',   'FLOOD_LEVEL_CMAP',     'FOG_CMAP',
            'SANDSTORM_LEVEL_CMAP', 'SNOW_DEPTH_CMAP',      'WIND_LEVEL_CMAP',
-           'RAIN_1H_CMAP',         'RAIN_3H_CMAP',         'TEMP_RT_CMAP',
-           'WS10_CMAP',            'SLP_CMAP',             'WS10_TYPHOONE_CMAP',
-           'RH850_CMAP',           'SST_CMAP',             'VIS_CMAP',
            ]
 
+
 import os
-from ..colormap import ColorMap, Level, create_cmap_from_csv
+from colormap import ColorMap, Level, create_cmap_from_csv
 
 SUB_DIR = os.path.dirname(__file__)
 IMG_DIR = os.path.join(os.path.dirname(__file__), '..', 'images', 'cma_colormaps')

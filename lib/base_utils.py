@@ -31,7 +31,7 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib import colors
 
-from gplot.lib.Colormaps.colormap import ColorMap
+from gplot.lib.Colormaps import ColorMap
 
 __all__=[
         'rcParams', 'restore_params', 'mkscale', 'index2Letter',

@@ -11,10 +11,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
 import gplot
 from gplot.lib import netcdf4_utils
 from gplot.lib.cartopy_utils import Plot2Cartopy, Plot2QuiverCartopy
-from gplot.lib.Colormaps import cma_colormaps
+from gplot.lib import Colormaps
 
 
 class TestCartopyPlots(unittest.TestCase):
@@ -384,7 +387,6 @@ class TestCartopyPlots(unittest.TestCase):
 
         proj = ccrs.PlateCarree()
         var_list = [ self.var1 * (1+ii/100) for ii in range(10) ]
-        ref_var = var_list[0]
 
         figure = plt.figure(figsize=(12, 10), dpi=100)
         ax = figure.add_subplot(111, projection=proj)
@@ -591,7 +593,7 @@ class TestCartopyPlots(unittest.TestCase):
         figure = plt.figure(figsize=(8, 6), dpi=100)
         ax = figure.add_subplot(111, projection=ccrs.PlateCarree())
 
-        cmap_obj = cma_colormaps.SST_CMAP
+        cmap_obj = Colormaps.CMA_COLORMAPS.SST_CMAP
         var = self.var2 - 273.15
         iso = gplot.Isofill(var, 10, 1, 1, ql=0.005, qr=0.001,
                             cmap=cmap_obj)
